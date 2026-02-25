@@ -51,10 +51,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "installerLanguages": [
-        "French"
-      ]
+      "allowToChangeInstallationDirectory": true
     },
     "mac": {
       "target": [
