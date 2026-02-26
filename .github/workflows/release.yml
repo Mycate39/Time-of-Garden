@@ -6,7 +6,25 @@ on:
       - 'v*'
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            ## Téléchargement
+
+            | Système | Fichier |
+            |---------|---------|
+            | 🪟 Windows | `Time-of-Garden-Setup-${{ github.ref_name }}.exe` |
+            | 🍎 macOS Intel (x64) | `Time-of-Garden-${{ github.ref_name }}.dmg` |
+            | 🍎 macOS Apple Silicon (M1/M2/M3) | `Time-of-Garden-${{ github.ref_name }}-arm64.dmg` |
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
   build:
+    needs: create-release
     strategy:
       matrix:
         include:
