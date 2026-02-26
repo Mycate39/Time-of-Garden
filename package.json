@@ -60,9 +60,6 @@
       "minimumSystemVersion": "13.0",
       "category": "public.app-category.games"
     },
-    "dmg": {
-      "title": "Time of Garden"
-    },
     "extraResources": [
       {
         "from": "resources/mods",
