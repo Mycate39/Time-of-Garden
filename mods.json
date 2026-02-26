@@ -1,5 +1,5 @@
 {
-  "version": "20260225151809",
+  "version": "20260226105037",
   "mods": [
     {
       "filename": "create-1.20.1-6.0.8.jar",
@@ -8,6 +8,18 @@
     {
       "filename": "embeddium-0.3.31+mc1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31+mc1.20.1.jar"
+    },
+    {
+      "filename": "fancymenu_forge_3.8.1_MC_1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/fancymenu_forge_3.8.1_MC_1.20.1.jar"
+    },
+    {
+      "filename": "konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar"
+    },
+    {
+      "filename": "melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar"
     },
     {
       "filename": "oculus-mc1.20.1-1.8.0.jar",
