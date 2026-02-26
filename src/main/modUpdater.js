@@ -60,10 +60,14 @@ export function saveLocalManifest(manifest) {
 
 /**
  * Compare les deux manifests et retourne true si une mise à jour est nécessaire.
+ * Force true si le dossier mods est vide (mods jamais téléchargés).
  */
 export function hasUpdate(remote, local) {
   if (!local) return true
-  return remote.version !== local.version
+  if (remote.version !== local.version) return true
+  const modsDir = getModsUserDir()
+  const downloaded = readdirSync(modsDir).filter((f) => f.endsWith('.jar'))
+  return downloaded.length === 0
 }
 
 /**

@@ -5,20 +5,22 @@ const store = new Store()
 const GITHUB_REPO = 'Mycate39/Time-of-Garden'
 
 function getToken() {
-  return store.get('settings.githubToken', '')
+  return (store.get('settings.githubToken', '') || '').trim()
 }
 
 function apiGet(path) {
+  const token = getToken()
+  const headers = {
+    Accept: 'application/vnd.github.v3+json',
+    'User-Agent': 'minecraft-launcher'
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
   return new Promise((resolve, reject) => {
     const req = httpsRequest({
       hostname: 'api.github.com',
       path,
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'minecraft-launcher'
-      }
+      headers
     }, (res) => {
       const chunks = []
       res.on('data', c => chunks.push(c))
@@ -84,7 +86,7 @@ export function downloadBuffer(url) {
  */
 export async function listModsOnGitHub() {
   const { status, data } = await apiGet(`/repos/${GITHUB_REPO}/contents/mods`)
-  if (status !== 200 || !Array.isArray(data)) return []
+if (status !== 200 || !Array.isArray(data)) return []
   return data
     .filter(f => f.type === 'file' && f.name.endsWith('.jar'))
     .map(f => ({ filename: f.name, sha: f.sha }))
