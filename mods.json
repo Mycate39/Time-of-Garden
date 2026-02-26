@@ -1,5 +1,5 @@
 {
-  "version": "20260226105037",
+  "version": "1.0.1",
   "mods": [
     {
       "filename": "create-1.20.1-6.0.8.jar",
@@ -7,7 +7,7 @@
     },
     {
       "filename": "embeddium-0.3.31+mc1.20.1.jar",
-      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31+mc1.20.1.jar"
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31%2Bmc1.20.1.jar"
     },
     {
       "filename": "fancymenu_forge_3.8.1_MC_1.20.1.jar",
