@@ -1,6 +1,178 @@
 {
-  "version": "20260226182412",
+  "version": "20260226204822",
   "mods": [
+    {
+      "filename": "AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar"
+    },
+    {
+      "filename": "BetterF3-7.0.2-Forge-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/BetterF3-7.0.2-Forge-1.20.1.jar"
+    },
+    {
+      "filename": "Better_Modlist-0.1.15-all.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Better_Modlist-0.1.15-all.jar"
+    },
+    {
+      "filename": "BridgingMod-2.5.1+1.20.1.forge-release.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/BridgingMod-2.5.1+1.20.1.forge-release.jar"
+    },
+    {
+      "filename": "CTM-1.20.1-1.1.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/CTM-1.20.1-1.1.10.jar"
+    },
+    {
+      "filename": "Chunky-1.3.146.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Chunky-1.3.146.jar"
+    },
+    {
+      "filename": "Clumps-forge-1.20.1-12.0.0.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Clumps-forge-1.20.1-12.0.0.4.jar"
+    },
+    {
+      "filename": "Connector-1.0.0-beta.48+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Connector-1.0.0-beta.48+1.20.1.jar"
+    },
+    {
+      "filename": "Controlling-forge-1.20.1-12.0.2.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Controlling-forge-1.20.1-12.0.2.jar"
+    },
+    {
+      "filename": "CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar"
+    },
+    {
+      "filename": "DistantHorizons-2.4.5-b-1.20.1-fabric-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/DistantHorizons-2.4.5-b-1.20.1-fabric-forge.jar"
+    },
+    {
+      "filename": "Essential_1-3-10-6_forge_1-20-1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Essential_1-3-10-6_forge_1-20-1.jar"
+    },
+    {
+      "filename": "ExtraSoundsNext-forge-1.20.1-1.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ExtraSoundsNext-forge-1.20.1-1.4.jar"
+    },
+    {
+      "filename": "FallingTree-1.20.1-4.3.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/FallingTree-1.20.1-4.3.4.jar"
+    },
+    {
+      "filename": "FarmersDelight-1.20.1-1.2.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/FarmersDelight-1.20.1-1.2.10.jar"
+    },
+    {
+      "filename": "Fastload-Reforged-mc1.20.1-3.4.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Fastload-Reforged-mc1.20.1-3.4.0.jar"
+    },
+    {
+      "filename": "Gobber2-Forge-1.20.1-2.8.9.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Gobber2-Forge-1.20.1-2.8.9.jar"
+    },
+    {
+      "filename": "ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar"
+    },
+    {
+      "filename": "ImmersiveUI-FORGE-0.3.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ImmersiveUI-FORGE-0.3.0.jar"
+    },
+    {
+      "filename": "InventoryProfilesNext-forge-1.20-1.10.20.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/InventoryProfilesNext-forge-1.20-1.10.20.jar"
+    },
+    {
+      "filename": "Jade-1.20.1-Forge-11.13.2.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Jade-1.20.1-Forge-11.13.2.jar"
+    },
+    {
+      "filename": "JadeAddons-1.20.1-Forge-5.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/JadeAddons-1.20.1-Forge-5.5.0.jar"
+    },
+    {
+      "filename": "MouseTweaks-forge-mc1.20.1-2.25.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar"
+    },
+    {
+      "filename": "Necronomicon-Forge-1.6.0+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Necronomicon-Forge-1.6.0+1.20.1.jar"
+    },
+    {
+      "filename": "OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar"
+    },
+    {
+      "filename": "Pehkui-3.8.2+1.20.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Pehkui-3.8.2+1.20.1-forge.jar"
+    },
+    {
+      "filename": "PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar"
+    },
+    {
+      "filename": "PresenceFootsteps-1.20.1-1.9.1-beta.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/PresenceFootsteps-1.20.1-1.9.1-beta.1.jar"
+    },
+    {
+      "filename": "PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar"
+    },
+    {
+      "filename": "SHW 1.1.0 [FORGE] 1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/SHW 1.1.0 [FORGE] 1.20.1.jar"
+    },
+    {
+      "filename": "Searchables-forge-1.20.1-1.0.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/Searchables-forge-1.20.1-1.0.3.jar"
+    },
+    {
+      "filename": "StorageDrawers-forge-1.20.1-12.14.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/StorageDrawers-forge-1.20.1-12.14.3.jar"
+    },
+    {
+      "filename": "TerraBlender-forge-1.20.1-3.0.1.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/TerraBlender-forge-1.20.1-3.0.1.10.jar"
+    },
+    {
+      "filename": "YungsApi-1.20-Forge-4.0.6.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsApi-1.20-Forge-4.0.6.jar"
+    },
+    {
+      "filename": "YungsBetterDesertTemples-1.20-Forge-3.0.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterDesertTemples-1.20-Forge-3.0.3.jar"
+    },
+    {
+      "filename": "YungsBetterDungeons-1.20-Forge-4.0.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterDungeons-1.20-Forge-4.0.4.jar"
+    },
+    {
+      "filename": "YungsBetterEndIsland-1.20-Forge-2.0.6.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterEndIsland-1.20-Forge-2.0.6.jar"
+    },
+    {
+      "filename": "YungsBetterJungleTemples-1.20-Forge-2.0.5.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterJungleTemples-1.20-Forge-2.0.5.jar"
+    },
+    {
+      "filename": "YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar"
+    },
+    {
+      "filename": "YungsBetterNetherFortresses-1.20-Forge-2.0.6.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterNetherFortresses-1.20-Forge-2.0.6.jar"
+    },
+    {
+      "filename": "YungsBetterOceanMonuments-1.20-Forge-3.0.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterOceanMonuments-1.20-Forge-3.0.4.jar"
+    },
+    {
+      "filename": "YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar"
+    },
+    {
+      "filename": "YungsBetterWitchHuts-1.20-Forge-3.0.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/YungsBetterWitchHuts-1.20-Forge-3.0.3.jar"
+    },
     {
       "filename": "[1.20.1] SecurityCraft v1.10.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/[1.20.1] SecurityCraft v1.10.1.jar"
@@ -42,24 +214,200 @@
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/appleskin-forge-mc1.20.1-2.5.1.jar"
     },
     {
+      "filename": "architectury-9.2.14-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/architectury-9.2.14-forge.jar"
+    },
+    {
+      "filename": "baguettelib-1.20.1-Forge-1.1.6.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/baguettelib-1.20.1-Forge-1.1.6.jar"
+    },
+    {
+      "filename": "balm-forge-1.20.1-7.3.38-all.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/balm-forge-1.20.1-7.3.38-all.jar"
+    },
+    {
+      "filename": "blockui-1.20.1-1.0.193.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/blockui-1.20.1-1.0.193.jar"
+    },
+    {
+      "filename": "caelus-forge-3.2.0+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/caelus-forge-3.2.0+1.20.1.jar"
+    },
+    {
+      "filename": "cbc_at_Forge_1.20.1_0.1.3b.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/cbc_at_Forge_1.20.1_0.1.3b.jar"
+    },
+    {
+      "filename": "chat_heads-0.15.0-forge-1.20.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/chat_heads-0.15.0-forge-1.20.jar"
+    },
+    {
+      "filename": "cloth-config-11.1.136-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/cloth-config-11.1.136-forge.jar"
+    },
+    {
+      "filename": "collective-1.20.1-8.13.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/collective-1.20.1-8.13.jar"
+    },
+    {
+      "filename": "comforts-forge-6.4.0+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/comforts-forge-6.4.0+1.20.1.jar"
+    },
+    {
+      "filename": "continuity-3.0.0+1.20.1.forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/continuity-3.0.0+1.20.1.forge.jar"
+    },
+    {
+      "filename": "controllable-forge-1.20.1-0.21.8.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/controllable-forge-1.20.1-0.21.8.jar"
+    },
+    {
+      "filename": "copycats-3.0.7+mc.1.20.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/copycats-3.0.7+mc.1.20.1-forge.jar"
+    },
+    {
+      "filename": "coroutil-forge-1.20.1-1.3.7.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/coroutil-forge-1.20.1-1.3.7.jar"
+    },
+    {
+      "filename": "corpse-forge-1.20.1-1.0.23.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/corpse-forge-1.20.1-1.0.23.jar"
+    },
+    {
+      "filename": "corpsecurioscompat-1.20.1-Forge-3.1.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/corpsecurioscompat-1.20.1-Forge-3.1.3.jar"
+    },
+    {
       "filename": "create-1.20.1-6.0.8.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/create-1.20.1-6.0.8.jar"
+    },
+    {
+      "filename": "create_enchantment_industry-1.3.3-for-create-6.0.6.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/create_enchantment_industry-1.3.3-for-create-6.0.6.jar"
+    },
+    {
+      "filename": "create_radar-0.4+mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/create_radar-0.4+mc1.20.1.jar"
+    },
+    {
+      "filename": "create_ultimate_factory-2.2.3-forge-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/create_ultimate_factory-2.2.3-forge-1.20.1.jar"
+    },
+    {
+      "filename": "createbetterfps-1.20.1-1.1.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/createbetterfps-1.20.1-1.1.1.jar"
+    },
+    {
+      "filename": "createbigcannons-5.11.0-mc.1.20.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/createbigcannons-5.11.0-mc.1.20.1-forge.jar"
+    },
+    {
+      "filename": "curios-forge-5.14.1+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/curios-forge-5.14.1+1.20.1.jar"
+    },
+    {
+      "filename": "do_a_barrel_roll-forge-3.5.6+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/do_a_barrel_roll-forge-3.5.6+1.20.1.jar"
     },
     {
       "filename": "drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar"
     },
     {
+      "filename": "easydisenchanting-forge-1.0.1-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/easydisenchanting-forge-1.0.1-1.20.1.jar"
+    },
+    {
+      "filename": "effortlessbuilding-1.20.1-3.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/effortlessbuilding-1.20.1-3.10.jar"
+    },
+    {
+      "filename": "elytraslot-forge-6.4.4+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/elytraslot-forge-6.4.4+1.20.1.jar"
+    },
+    {
       "filename": "embeddium-0.3.31+mc1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31+mc1.20.1.jar"
+    },
+    {
+      "filename": "endertrigon-1.20.1-1.1-all.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/endertrigon-1.20.1-1.1-all.jar"
+    },
+    {
+      "filename": "entity_model_features_1.20.1-forge-3.0.12.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/entity_model_features_1.20.1-forge-3.0.12.jar"
+    },
+    {
+      "filename": "entity_texture_features_1.20.1-forge-7.0.9.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/entity_texture_features_1.20.1-forge-7.0.9.jar"
+    },
+    {
+      "filename": "entityculling-forge-1.9.5-mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/entityculling-forge-1.9.5-mc1.20.1.jar"
+    },
+    {
+      "filename": "fabric-api-0.92.6+1.11.14+1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/fabric-api-0.92.6+1.11.14+1.20.1.jar"
     },
     {
       "filename": "fancymenu_forge_3.8.1_MC_1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/fancymenu_forge_3.8.1_MC_1.20.1.jar"
     },
     {
+      "filename": "ferritecore-6.0.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ferritecore-6.0.1-forge.jar"
+    },
+    {
+      "filename": "framework-forge-1.20.1-0.8.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/framework-forge-1.20.1-0.8.0.jar"
+    },
+    {
+      "filename": "freecam-forge-1.2.1+1.20.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/freecam-forge-1.2.1+1.20.jar"
+    },
+    {
+      "filename": "geckolib-forge-1.20.1-4.8.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/geckolib-forge-1.20.1-4.8.3.jar"
+    },
+    {
+      "filename": "hole_filler_mod-1.2.8_mc-1.20.1_forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/hole_filler_mod-1.2.8_mc-1.20.1_forge.jar"
+    },
+    {
+      "filename": "hourglass-1.20-1.2.1.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/hourglass-1.20-1.2.1.1.jar"
+    },
+    {
+      "filename": "immersive_optimization-forge-1.20.1-0.1.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/immersive_optimization-forge-1.20.1-0.1.0.jar"
+    },
+    {
+      "filename": "jei-1.20.1-forge-15.20.0.129.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/jei-1.20.1-forge-15.20.0.129.jar"
+    },
+    {
       "filename": "konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar"
+    },
+    {
+      "filename": "kotlinforforge-4.12.0-all.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/kotlinforforge-4.12.0-all.jar"
+    },
+    {
+      "filename": "kubejs-forge-2001.6.5-build.16.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/kubejs-forge-2001.6.5-build.16.jar"
+    },
+    {
+      "filename": "libIPN-forge-1.20-4.0.2.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/libIPN-forge-1.20-4.0.2.jar"
+    },
+    {
+      "filename": "libraryferret-forge-1.20.1-4.0.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/libraryferret-forge-1.20.1-4.0.0.jar"
+    },
+    {
+      "filename": "lithostitched-forge-1.20.1-1.4.11.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/lithostitched-forge-1.20.1-1.4.11.jar"
     },
     {
       "filename": "mcef-forge-2.1.6-1.20.1.jar",
@@ -70,8 +418,68 @@
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar"
     },
     {
+      "filename": "memoryleakfix-forge-1.17+-1.1.5.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/memoryleakfix-forge-1.17+-1.1.5.jar"
+    },
+    {
+      "filename": "mes-1.4.6-1.20.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/mes-1.4.6-1.20.jar"
+    },
+    {
+      "filename": "modernfix-forge-5.26.2+mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/modernfix-forge-5.26.2+mc1.20.1.jar"
+    },
+    {
+      "filename": "moonlight-1.20-2.16.28-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/moonlight-1.20-2.16.28-forge.jar"
+    },
+    {
       "filename": "oculus-mc1.20.1-1.8.0.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/oculus-mc1.20.1-1.8.0.jar"
+    },
+    {
+      "filename": "okzoomer-forge-1.20-3.0.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/okzoomer-forge-1.20-3.0.1.jar"
+    },
+    {
+      "filename": "open-parties-and-claims-forge-1.20.1-0.25.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/open-parties-and-claims-forge-1.20.1-0.25.10.jar"
+    },
+    {
+      "filename": "oreharvester-1.20.1-1.5.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/oreharvester-1.20.1-1.5.jar"
+    },
+    {
+      "filename": "ponderjs-1.20.1-2.1.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ponderjs-1.20.1-2.1.0.jar"
+    },
+    {
+      "filename": "radium-mc1.20.1-0.12.4+git.26c9d8e.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/radium-mc1.20.1-0.12.4+git.26c9d8e.jar"
+    },
+    {
+      "filename": "rhino-forge-2001.2.3-build.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/rhino-forge-2001.2.3-build.10.jar"
+    },
+    {
+      "filename": "ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar"
+    },
+    {
+      "filename": "saturn-mc1.20.1-0.1.3.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/saturn-mc1.20.1-0.1.3.jar"
+    },
+    {
+      "filename": "sit-1.20.1-1.3.5.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/sit-1.20.1-1.3.5.jar"
+    },
+    {
+      "filename": "skinlayers3d-forge-1.10.1-mc1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/skinlayers3d-forge-1.10.1-mc1.20.1.jar"
+    },
+    {
+      "filename": "smoothboot(reloaded)-mc1.20.1-0.0.4.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/smoothboot(reloaded)-mc1.20.1-0.0.4.jar"
     },
     {
       "filename": "sodiumdynamiclights-forge-1.0.10-1.20.1.jar",
@@ -98,8 +506,56 @@
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/sophisticatedcore-1.20.1-1.3.5.1505.jar"
     },
     {
+      "filename": "sound-physics-remastered-forge-1.20.1-1.4.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/sound-physics-remastered-forge-1.20.1-1.4.10.jar"
+    },
+    {
+      "filename": "spark-1.10.53-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/spark-1.10.53-forge.jar"
+    },
+    {
       "filename": "spiffyhud_forge_3.1.0_MC_1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/spiffyhud_forge_3.1.0_MC_1.20.1.jar"
+    },
+    {
+      "filename": "supermartijn642configlib-1.1.8-forge-mc1.20.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/supermartijn642configlib-1.1.8-forge-mc1.20.jar"
+    },
+    {
+      "filename": "tectonic-3.0.17-forge-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/tectonic-3.0.17-forge-1.20.1.jar"
+    },
+    {
+      "filename": "towntalk-1.20.1-1.1.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/towntalk-1.20.1-1.1.0.jar"
+    },
+    {
+      "filename": "txnilib-forge-1.0.24-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/txnilib-forge-1.0.24-1.20.1.jar"
+    },
+    {
+      "filename": "voicechat-forge-1.20.1-2.6.12.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/voicechat-forge-1.20.1-2.6.12.jar"
+    },
+    {
+      "filename": "waystones-forge-1.20.1-14.1.19.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/waystones-forge-1.20.1-14.1.19.jar"
+    },
+    {
+      "filename": "worldedit-mod-7.2.15.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/worldedit-mod-7.2.15.jar"
+    },
+    {
+      "filename": "xaerominimap-forge-1.20.1-25.3.10.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/xaerominimap-forge-1.20.1-25.3.10.jar"
+    },
+    {
+      "filename": "xaeroworldmap-forge-1.20.1-1.40.11.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/xaeroworldmap-forge-1.20.1-1.40.11.jar"
+    },
+    {
+      "filename": "yet_another_config_lib_v3-3.6.6+1.20.1-forge.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/yet_another_config_lib_v3-3.6.6+1.20.1-forge.jar"
     }
   ]
 }
