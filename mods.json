@@ -1,13 +1,17 @@
 {
-  "version": "1.0.2",
+  "version": "20260226124110",
   "mods": [
+    {
+      "filename": "appleskin-forge-mc1.20.1-2.5.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/appleskin-forge-mc1.20.1-2.5.1.jar"
+    },
     {
       "filename": "create-1.20.1-6.0.8.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/create-1.20.1-6.0.8.jar"
     },
     {
       "filename": "embeddium-0.3.31+mc1.20.1.jar",
-      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31%2Bmc1.20.1.jar"
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/embeddium-0.3.31+mc1.20.1.jar"
     },
     {
       "filename": "fancymenu_forge_3.8.1_MC_1.20.1.jar",
