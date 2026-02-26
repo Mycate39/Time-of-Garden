@@ -1,6 +1,42 @@
 {
-  "version": "20260226130203",
+  "version": "20260226182412",
   "mods": [
+    {
+      "filename": "[1.20.1] SecurityCraft v1.10.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/[1.20.1] SecurityCraft v1.10.1.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_core_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_core_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_gamerules_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_gamerules_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_items_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_items_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_mods_1.20.1-10.0.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_mods_1.20.1-10.0.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_player_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_player_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "adaptive_performance_tweaks_spawn_1.20.1-11.5.0.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/adaptive_performance_tweaks_spawn_1.20.1-11.5.0.jar"
+    },
+    {
+      "filename": "additional_recipes-1.6.0-forge-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/additional_recipes-1.6.0-forge-1.20.1.jar"
+    },
     {
       "filename": "appleskin-forge-mc1.20.1-2.5.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/appleskin-forge-mc1.20.1-2.5.1.jar"
