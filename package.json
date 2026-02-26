@@ -61,24 +61,7 @@
       "category": "public.app-category.games"
     },
     "dmg": {
-      "title": "Time of Garden",
-      "contents": [
-        {
-          "x": 180,
-          "y": 170,
-          "type": "file"
-        },
-        {
-          "x": 480,
-          "y": 170,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ],
-      "window": {
-        "width": 660,
-        "height": 400
-      }
+      "title": "Time of Garden"
     },
     "extraResources": [
       {
