@@ -75,14 +75,14 @@
     "files": [
       "out/**/*"
     ],
+    "releaseInfo": {
+      "releaseNotes": "The launcher is now more stable"
+    },
     "publish": {
       "provider": "github",
       "owner": "Mycate39",
       "repo": "Time-of-Garden",
-      "releaseType": "release",
-      "releaseInfo": {
-        "releaseNotes": "The launcher is now more stable"
-      }
+      "releaseType": "release"
     }
   }
 }
