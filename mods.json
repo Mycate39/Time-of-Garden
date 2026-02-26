@@ -1,5 +1,5 @@
 {
-  "version": "20260226124413",
+  "version": "20260226130203",
   "mods": [
     {
       "filename": "appleskin-forge-mc1.20.1-2.5.1.jar",
@@ -24,6 +24,10 @@
     {
       "filename": "konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar"
+    },
+    {
+      "filename": "mcef-forge-2.1.6-1.20.1.jar",
+      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/mcef-forge-2.1.6-1.20.1.jar"
     },
     {
       "filename": "melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
