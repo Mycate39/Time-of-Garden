@@ -34,22 +34,19 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
   const [logsCopied, setLogsCopied] = useState(false)
   const [settings, setSettings] = useState(null)
 
-  // Mods update state
-  const [modsUpdate, setModsUpdate] = useState(null) // null | { version, count, remoteManifest }
-  const [modsStatus, setModsStatus] = useState('idle') // 'idle' | 'checking' | 'downloading' | 'done'
-  const [modsProgress, setModsProgress] = useState(null) // { current, total, filename }
+  // Mods update
+  const [modsUpdate, setModsUpdate] = useState(null)
+  const [modsStatus, setModsStatus] = useState('idle')
+  const [modsProgress, setModsProgress] = useState(null)
 
-  // Launcher auto-update state
-  const [launcherUpdate, setLauncherUpdate] = useState(null) // null | { version }
-  const [launcherUpdateProgress, setLauncherUpdateProgress] = useState(null) // 0-100
-  const [launcherUpdateReady, setLauncherUpdateReady] = useState(false)
+  // Launcher auto-update — modal flow
+  const [updateModal, setUpdateModal] = useState(null)   // null | { version }
+  const [updateDlPct, setUpdateDlPct] = useState(null)  // null | 0-100
+  const [updateReady, setUpdateReady] = useState(false)
 
   // Server status
-  const [serverOnline, setServerOnline] = useState(null) // null | true | false
+  const [serverOnline, setServerOnline] = useState(null)
   const serverPingRef = useRef(null)
-
-  // Bot keepalive (admin)
-  const [botStatus, setBotStatus] = useState('stopped') // 'stopped' | 'connecting' | 'online' | 'reconnecting'
 
   const checkServerStatus = async () => {
     try {
@@ -61,48 +58,38 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
   }
 
   useEffect(() => {
-    window.launcher.getSettings().then((s) => {
-      setSettings(s)
-    })
+    window.launcher.getSettings().then(setSettings)
 
-    window.launcher.onProgress((_, e) => {
-      setProgress(e)
-    })
+    window.launcher.onProgress((_, e) => setProgress(e))
 
     window.launcher.onLog((_, msg) => {
-      setLogs((prev) => [...prev.slice(-200), msg])
+      setLogs(prev => [...prev.slice(-200), msg])
     })
 
     window.launcher.onGameClose((_, code) => {
       setStatus('idle')
       setProgress(null)
-      setLogs((prev) => [...prev, `[Launcher] Jeu fermé (code ${code})`])
-      // Re-vérifie les mods quand le jeu se ferme
+      setLogs(prev => [...prev, `[Launcher] Jeu fermé (code ${code})`])
       checkModsUpdate()
     })
 
-    window.launcher.onModsProgress((_, p) => {
-      setModsProgress(p)
+    window.launcher.onModsProgress((_, p) => setModsProgress(p))
+
+    // Launcher update events
+    window.launcher.onUpdateAvailable((_, info) => {
+      setUpdateModal({ version: info.version })
+    })
+    window.launcher.onUpdateProgress((_, pct) => setUpdateDlPct(pct))
+    window.launcher.onUpdateReady(() => {
+      setUpdateDlPct(100)
+      setUpdateReady(true)
     })
 
-    window.launcher.onUpdateAvailable((_, info) => setLauncherUpdate(info))
-    window.launcher.onUpdateProgress((_, pct) => setLauncherUpdateProgress(pct))
-    window.launcher.onUpdateReady(() => setLauncherUpdateReady(true))
-
-    // Statut bot au chargement
-    window.launcher.getBotStatus().then(({ status }) => setBotStatus(status))
-    window.launcher.onBotStatus((_, { status }) => setBotStatus(status))
-
-    // Vérification des mods au démarrage
     checkModsUpdate()
-
-    // Vérification du statut serveur au démarrage + toutes les 30 secondes
     checkServerStatus()
     serverPingRef.current = setInterval(checkServerStatus, 30000)
 
-    return () => {
-      if (serverPingRef.current) clearInterval(serverPingRef.current)
-    }
+    return () => { if (serverPingRef.current) clearInterval(serverPingRef.current) }
   }, [])
 
   const checkModsUpdate = async () => {
@@ -110,11 +97,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
     try {
       const result = await window.launcher.checkMods()
       if (result.hasUpdate && !result.error) {
-        setModsUpdate({
-          version: result.version,
-          count: result.count,
-          remoteManifest: result.remoteManifest
-        })
+        setModsUpdate({ version: result.version, count: result.count, remoteManifest: result.remoteManifest })
       }
     } catch {}
     setModsStatus('idle')
@@ -132,23 +115,10 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
     }
   }
 
-  const handleSkipMods = () => {
-    setModsUpdate(null)
-    setModsStatus('idle')
-  }
-
   const handleCopyLogs = () => {
     navigator.clipboard.writeText(logs.join('\n'))
     setLogsCopied(true)
     setTimeout(() => setLogsCopied(false), 2000)
-  }
-
-  const handleToggleBot = async () => {
-    if (botStatus === 'stopped') {
-      await window.launcher.startBot()
-    } else {
-      await window.launcher.stopBot()
-    }
   }
 
   const handlePlay = async () => {
@@ -160,35 +130,113 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
       setStatus('playing')
     } catch (e) {
       setStatus('error')
-      setLogs((prev) => [...prev, `[Erreur] ${e.message}`])
+      setLogs(prev => [...prev, `[Erreur] ${e.message}`])
     }
   }
 
+  // Auto-update modal actions
+  const handleStartDownload = () => {
+    setUpdateDlPct(0)
+    window.launcher.downloadUpdate()
+  }
+
+  const handleInstallUpdate = () => {
+    window.launcher.installUpdate()
+  }
+
+  const handleDismissUpdate = () => {
+    setUpdateModal(null)
+    setUpdateDlPct(null)
+    setUpdateReady(false)
+  }
+
   const serverDescription = settings?.serverDescription || ''
+  const isDownloading = updateDlPct !== null && !updateReady
 
   return (
     <>
       <Titlebar />
+
+      {/* ── Launcher update modal ── */}
+      {updateModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span className="modal-gear">⚙</span>
+              <div>
+                <div className="modal-title">Mise à jour disponible</div>
+                <div className="modal-version">v{updateModal.version}</div>
+              </div>
+            </div>
+
+            {!isDownloading && !updateReady && (
+              <>
+                <div className="modal-desc">
+                  Une nouvelle version du launcher est disponible. Voulez-vous la télécharger maintenant ?<br />
+                  Le jeu sera redémarré après l'installation.
+                </div>
+                <div className="modal-actions">
+                  <button className="btn-ghost" onClick={handleDismissUpdate}>Plus tard</button>
+                  <button className="btn-primary" onClick={handleStartDownload}>Télécharger</button>
+                </div>
+              </>
+            )}
+
+            {isDownloading && (
+              <div className="modal-progress">
+                <div className="modal-progress-label">
+                  <span>Téléchargement en cours...</span>
+                  <span>{updateDlPct ?? 0}%</span>
+                </div>
+                <div className="modal-progress-track">
+                  <div className="modal-progress-fill" style={{ width: `${Math.max(updateDlPct ?? 0, 3)}%` }} />
+                </div>
+              </div>
+            )}
+
+            {updateReady && (
+              <>
+                <div className="modal-desc" style={{ color: 'var(--green-bright)' }}>
+                  ✓ Mise à jour téléchargée et prête à installer.
+                </div>
+                <div className="modal-actions">
+                  <button className="btn-ghost" onClick={handleDismissUpdate}>Redémarrer plus tard</button>
+                  <button className="btn-primary" onClick={handleInstallUpdate}>Redémarrer et installer</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="home-page">
         <div className="home-content">
-          {/* Panneau gauche */}
-          <aside className="home-sidebar">
-            <img src={logo} alt="Time of Garden" className="server-logo" />
-            <div className="server-name">Time of Garden</div>
-            <div className="server-version">Forge 1.20.1</div>
-            <div className="splash-text">{splashText}</div>
-          </aside>
 
-          {/* Panneau principal */}
-          <div className="home-main">
-            {/* Infos joueur */}
+          {/* ── Sidebar ── */}
+          <aside className="home-sidebar">
+            <div className="sidebar-bg-gear">⚙</div>
+
+            {/* Logo */}
+            <div className="logo-section">
+              <div className="logo-gear-wrap">
+                <div className="logo-gear-outer">⚙</div>
+                <div className="logo-gear-inner">⚙</div>
+                <img src={logo} alt="Time of Garden" className="server-logo" />
+              </div>
+              <div className="server-name">Time of{'\n'}Garden</div>
+              <div className="server-version">Forge 1.20.1</div>
+              <div className="splash-text">{splashText}</div>
+            </div>
+
+            <div className="sidebar-sep" />
+
+            {/* Player */}
             <div className="player-card">
               <div className="player-avatar">
                 {profile?.name
                   ? <img
                       src={`https://mc-heads.net/avatar/${profile.name}/64`}
-                      alt="skin"
-                      className="player-skin-img"
+                      alt="skin" className="player-skin-img"
                       onError={e => { e.currentTarget.style.display = 'none' }}
                     />
                   : '👤'
@@ -200,37 +248,40 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
               </div>
             </div>
 
-            {/* Statut serveur */}
+            {/* Server status */}
             <div className="server-status-bar">
-              <span
-                className={`server-dot ${serverOnline === true ? 'online' : serverOnline === false ? 'offline' : 'unknown'}`}
-              />
-              <span className="server-status-label">
-                {serverOnline === true ? 'Serveur en ligne' : serverOnline === false ? 'Serveur hors ligne' : 'Vérification...'}
-              </span>
-              {serverDescription && (
-                <span className="server-description">{serverDescription}</span>
-              )}
+              <div className="server-status-row">
+                <span className={`server-dot ${serverOnline === true ? 'online' : serverOnline === false ? 'offline' : 'unknown'}`} />
+                <span className="server-status-label">
+                  {serverOnline === true ? 'Serveur en ligne' : serverOnline === false ? 'Hors ligne' : 'Vérification...'}
+                </span>
+              </div>
+              {serverDescription ? (
+                <div className="server-description">{serverDescription}</div>
+              ) : null}
             </div>
+          </aside>
 
-            {/* Bannière mise à jour mods */}
+          {/* ── Main panel ── */}
+          <div className="home-main">
+            <div className="main-bg-gear">⚙</div>
+
+            {/* Mods update banners */}
             {modsStatus === 'checking' && (
               <div className="mods-banner">
-                <span>🔍 Vérification des mods...</span>
+                <span>⚙ Vérification des mods...</span>
               </div>
             )}
 
             {modsUpdate && modsStatus === 'idle' && (
               <div className="mods-banner update">
                 <div className="mods-banner-info">
-                  <strong>📦 Mise à jour des mods disponible</strong>
+                  <strong>Mise à jour des mods disponible</strong>
                   <span>Version {modsUpdate.version} — {modsUpdate.count} mod(s)</span>
                 </div>
                 <div className="mods-banner-actions">
-                  <button className="btn-primary" onClick={handleInstallMods}>
-                    Installer
-                  </button>
-                  <button className="footer-btn" onClick={handleSkipMods}>
+                  <button className="btn-primary" onClick={handleInstallMods}>Installer</button>
+                  <button className="btn-ghost" onClick={() => { setModsUpdate(null); setModsStatus('idle') }}>
                     Plus tard
                   </button>
                 </div>
@@ -242,9 +293,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
                 <div className="mods-banner-info">
                   <strong>⬇ Téléchargement des mods...</strong>
                   {modsProgress && (
-                    <span>
-                      {modsProgress.current}/{modsProgress.total} — {modsProgress.filename}
-                    </span>
+                    <span>{modsProgress.current}/{modsProgress.total} — {modsProgress.filename}</span>
                   )}
                 </div>
                 <div className="mods-progress-track">
@@ -263,48 +312,19 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
             {modsStatus === 'done' && (
               <div className="mods-banner success">
                 <span>✓ Mods mis à jour avec succès !</span>
-                <button className="footer-btn" onClick={() => setModsStatus('idle')}>
-                  OK
-                </button>
+                <button className="btn-ghost" onClick={() => setModsStatus('idle')}>OK</button>
               </div>
             )}
 
-            {/* Bannière mise à jour launcher */}
-            {launcherUpdate && !launcherUpdateReady && (
-              <div className="mods-banner downloading">
-                <div className="mods-banner-info">
-                  <strong>⬇ Mise à jour du launcher {launcherUpdate.version}...</strong>
-                  {launcherUpdateProgress !== null && (
-                    <span>{launcherUpdateProgress}%</span>
-                  )}
-                </div>
-                <div className="mods-progress-track">
-                  <div
-                    className="mods-progress-fill"
-                    style={{ width: launcherUpdateProgress !== null ? `${launcherUpdateProgress}%` : '5%' }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {launcherUpdateReady && (
-              <div className="mods-banner success">
-                <span>✓ Mise à jour prête !</span>
-                <button className="btn-primary" onClick={() => window.launcher.installUpdate()}>
-                  Redémarrer
-                </button>
-              </div>
-            )}
-
-            {/* Section lancement */}
+            {/* Launch section */}
             <div className="launch-section">
               {(status === 'idle' || status === 'error') && (
                 <>
                   <button className="play-btn" onClick={handlePlay}>
-                    JOUER
+                    ▶ Jouer
                   </button>
                   {status === 'error' && (
-                    <span style={{ color: 'var(--red)', fontSize: 13 }}>
+                    <span style={{ color: 'var(--red)', fontSize: 14 }}>
                       Une erreur est survenue. Consulte les logs.
                     </span>
                   )}
@@ -313,50 +333,51 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
 
               {status === 'launching' && (
                 <>
+                  <div className="play-btn-launching">
+                    <span className="launch-gear">⚙</span>
+                    Lancement...
+                  </div>
                   <ProgressBar progress={progress} />
-                  <p className="launching-text">Lancement en cours...</p>
+                  <div className="launching-text">Préparation de Minecraft en cours</div>
                 </>
               )}
 
               {status === 'playing' && (
-                <div className="playing-badge">Jeu en cours...</div>
+                <div className="playing-badge">✓ Minecraft est en cours</div>
               )}
             </div>
 
-            {/* Pied de page */}
+            {/* Footer */}
             <div className="home-footer">
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="footer-left">
                 <button className="footer-btn" onClick={() => setShowLogs(!showLogs)}>
-                  {showLogs ? 'Masquer logs' : 'Afficher logs'}
+                  {showLogs ? '▲ Masquer logs' : '▼ Logs'}
                 </button>
                 {showLogs && logs.length > 0 && (
                   <button className="footer-btn" onClick={handleCopyLogs}>
-                    {logsCopied ? '✓ Copié' : 'Copier logs'}
+                    {logsCopied ? '✓ Copié' : 'Copier'}
                   </button>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div className="footer-right">
                 {profile?.name === ADMIN_USERNAME && (
-                  <>
-                    <button className="footer-btn" onClick={onModLibrary} title="Bibliothèque de mods (admin)">
-                      📚
-                    </button>
-                    <button
-                      className={`footer-btn bot-btn ${botStatus}`}
-                      onClick={handleToggleBot}
-                      title={`Bot keepalive : ${botStatus}`}
-                      disabled={botStatus === 'connecting' || botStatus === 'reconnecting'}
-                    >
-                      🤖 {botStatus === 'stopped' ? 'Bot OFF' : botStatus === 'online' ? 'Bot ON' : '...'}
-                    </button>
-                  </>
+                  <button className="footer-btn" onClick={onModLibrary} title="Bibliothèque de mods (admin)">
+                    ⚙ Mods
+                  </button>
                 )}
-                <button className="footer-btn" onClick={onSettings}>⚙ Paramètres</button>
+                <button className="footer-btn" onClick={onSettings}>Paramètres</button>
                 <button className="footer-btn danger" onClick={onLogout}>Déconnexion</button>
               </div>
             </div>
 
-            {showLogs && <ConsoleLog logs={logs} />}
+            {showLogs && (
+              <>
+                <div className="console-toggle-row" onClick={() => setShowLogs(false)}>
+                  ▼ Console — {logs.length} lignes
+                </div>
+                <ConsoleLog logs={logs} />
+              </>
+            )}
           </div>
         </div>
       </div>

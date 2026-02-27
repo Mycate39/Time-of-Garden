@@ -5,7 +5,7 @@ import { registerIpcHandlers } from './ipc'
 
 let mainWindow
 
-autoUpdater.autoDownload = true
+autoUpdater.autoDownload = false        // L'utilisateur décide de télécharger
 autoUpdater.autoInstallOnAppQuit = true
 
 function createWindow() {
@@ -55,6 +55,11 @@ app.whenReady().then(() => {
 
     autoUpdater.on('error', () => {
       // Erreur silencieuse — pas critique
+    })
+
+    // Déclenché par le renderer quand l'utilisateur clique "Télécharger"
+    ipcMain.on('updater:download', () => {
+      autoUpdater.downloadUpdate()
     })
 
     ipcMain.on('updater:install', () => {

@@ -3,20 +3,17 @@ import Titlebar from '../components/Titlebar'
 
 export default function Settings({ onBack }) {
   const [settings, setSettings] = useState({
-    ramMin: 2,
-    ramMax: 4,
+    ramMin: 2, ramMax: 4,
     javaPath: 'java',
     githubToken: '',
     serverDescription: ''
   })
   const [saved, setSaved] = useState(false)
 
-  useEffect(() => {
-    window.launcher.getSettings().then(setSettings)
-  }, [])
+  useEffect(() => { window.launcher.getSettings().then(setSettings) }, [])
 
   const handleChange = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }))
+    setSettings(prev => ({ ...prev, [key]: value }))
     setSaved(false)
   }
 
@@ -32,10 +29,11 @@ export default function Settings({ onBack }) {
       <div className="settings-page">
         <div className="settings-header">
           <button className="back-btn" onClick={onBack}>← Retour</button>
-          <h2>Paramètres</h2>
+          <h2>⚙ Paramètres</h2>
         </div>
 
         <div className="settings-body">
+
           {/* Serveur */}
           <div className="settings-group">
             <h3>Serveur</h3>
@@ -46,8 +44,7 @@ export default function Settings({ onBack }) {
                 rows={3}
                 placeholder="Une courte description de votre serveur..."
                 value={settings.serverDescription}
-                onChange={(e) => handleChange('serverDescription', e.target.value)}
-                style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                onChange={e => handleChange('serverDescription', e.target.value)}
               />
             </div>
           </div>
@@ -60,13 +57,10 @@ export default function Settings({ onBack }) {
                 RAM minimum <span>{settings.ramMin} Go</span>
               </label>
               <input
-                className="setting-range"
-                type="range"
-                min={1}
-                max={8}
-                step={1}
+                className="setting-range" type="range"
+                min={1} max={8} step={1}
                 value={settings.ramMin}
-                onChange={(e) => handleChange('ramMin', Number(e.target.value))}
+                onChange={e => handleChange('ramMin', Number(e.target.value))}
               />
             </div>
             <div className="setting-row">
@@ -74,33 +68,31 @@ export default function Settings({ onBack }) {
                 RAM maximum <span>{settings.ramMax} Go</span>
               </label>
               <input
-                className="setting-range"
-                type="range"
-                min={2}
-                max={16}
-                step={1}
+                className="setting-range" type="range"
+                min={2} max={16} step={1}
                 value={settings.ramMax}
-                onChange={(e) => handleChange('ramMax', Number(e.target.value))}
+                onChange={e => handleChange('ramMax', Number(e.target.value))}
               />
             </div>
           </div>
 
-          {/* GitHub Token (admin) */}
+          {/* Admin */}
           <div className="settings-group">
             <h3>Admin — GitHub Token</h3>
             <div className="setting-row">
               <label className="setting-label">Token GitHub (pour upload de mods)</label>
               <input
-                className="setting-input"
-                type="password"
+                className="setting-input" type="password"
                 placeholder="ghp_..."
                 value={settings.githubToken}
-                onChange={(e) => handleChange('githubToken', e.target.value)}
+                onChange={e => handleChange('githubToken', e.target.value)}
               />
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-              Nécessaire uniquement pour l'admin. Jamais envoyé en dehors de cette app.
-            </p>
+            <div className="setting-row">
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                Nécessaire uniquement pour l'admin. Jamais envoyé en dehors de cette app.
+              </span>
+            </div>
           </div>
 
           {/* Java */}
@@ -108,25 +100,29 @@ export default function Settings({ onBack }) {
             <h3>Java</h3>
             <div className="setting-row">
               <label className="setting-label">
-                Chemin vers Java 17 (laisse "java" pour utiliser le Java du système)
+                Chemin vers Java 17 (laisse "java" pour le Java système)
               </label>
               <input
-                className="setting-input"
-                type="text"
-                placeholder='ex Windows : C:\Program Files\Java\jdk-17\bin\java.exe  |  ex macOS : /usr/local/opt/openjdk@17/bin/java'
+                className="setting-input" type="text"
+                placeholder='ex: /usr/local/opt/openjdk@17/bin/java'
                 value={settings.javaPath}
-                onChange={(e) => handleChange('javaPath', e.target.value)}
+                onChange={e => handleChange('javaPath', e.target.value)}
               />
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-              Minecraft 1.20.1 avec Forge nécessite Java 17 ou supérieur.
-            </p>
+            <div className="setting-row">
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                Minecraft 1.20.1 avec Forge nécessite Java 17 ou supérieur.
+              </span>
+            </div>
           </div>
 
           <div className="settings-actions">
-            <button className="btn-primary" onClick={handleSave}>
-              {saved ? '✓ Sauvegardé' : 'Sauvegarder'}
-            </button>
+            {saved && (
+              <span style={{ color: 'var(--green-bright)', fontSize: 14, fontWeight: 600 }}>
+                ✓ Sauvegardé
+              </span>
+            )}
+            <button className="btn-primary" onClick={handleSave}>Sauvegarder</button>
           </div>
         </div>
       </div>

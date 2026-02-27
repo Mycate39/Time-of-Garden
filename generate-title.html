@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Générateur de titre — Time of Garden</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+      gap: 24px;
+      color: #eee;
+    }
+    h2 { font-size: 16px; letter-spacing: 2px; color: #aaa; margin: 0; }
+    canvas {
+      border: 2px solid #444;
+      background: repeating-conic-gradient(#222 0% 25%, #2a2a2a 0% 50%) 0 0 / 16px 16px;
+    }
+    .btns { display: flex; gap: 12px; }
+    button {
+      background: #5c6bc0;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+    button:hover { background: #7986cb; }
+    p { color: #888; font-size: 13px; text-align: center; line-height: 1.8; margin: 0; }
+    code { color: #90caf9; }
+  </style>
+</head>
+<body>
+  <h2>APERÇU DU TITRE</h2>
+
+  <canvas id="c" width="512" height="128"></canvas>
+
+  <div class="btns">
+    <button onclick="download512()">⬇ Télécharger 512×128 (FancyMenu)</button>
+    <button onclick="download256()">⬇ Télécharger 256×64 (Resource Pack)</button>
+  </div>
+
+  <p>
+    Pour FancyMenu : utilise le fichier dans ton layout en tant que widget Image.<br>
+    Pour Resource Pack : place-le dans<br>
+    <code>assets/minecraft/textures/gui/title/minecraft.png</code>
+  </p>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    function draw(cvs, c) {
+      const W = cvs.width;
+      const H = cvs.height;
+
+      c.clearRect(0, 0, W, H);
+
+      const text = 'Time of Garden';
+
+      // Cherche la taille de police qui remplit ~90% de la largeur
+      let fontSize = Math.floor(H * 0.45);
+      c.font = `${fontSize}px 'Press Start 2P', monospace`;
+      let measured = c.measureText(text).width;
+      if (measured > W * 0.92) {
+        fontSize = Math.floor(fontSize * (W * 0.92) / measured);
+      }
+      c.font = `${fontSize}px 'Press Start 2P', monospace`;
+
+      const cx = W / 2;
+      const cy = H / 2 + fontSize * 0.05; // légèrement centré visuellement
+      const sh = Math.max(3, Math.round(fontSize * 0.1)); // taille ombre
+
+      // Ombre profonde
+      c.fillStyle = '#2a1500';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(text, cx + sh * 2, cy + sh * 2);
+
+      // Ombre principale (marron-doré)
+      c.fillStyle = '#6b3f00';
+      c.fillText(text, cx + sh, cy + sh);
+
+      // Texte principal — or vif
+      c.fillStyle = '#FFAA00';
+      c.fillText(text, cx, cy);
+
+      // Reflet subtil en haut
+      c.fillStyle = 'rgba(255,235,140,0.22)';
+      c.fillText(text, cx, cy - Math.max(1, Math.round(sh * 0.5)));
+    }
+
+    function render() {
+      draw(canvas, ctx);
+    }
+
+    document.fonts.ready.then(render);
+    setTimeout(render, 800); // fallback si polices lentes
+
+    function exportPNG(w, h, filename) {
+      const off = document.createElement('canvas');
+      off.width = w;
+      off.height = h;
+      const offCtx = off.getContext('2d');
+      draw(off, offCtx);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = off.toDataURL('image/png');
+      link.click();
+    }
+
+    function download512() { exportPNG(512, 128, 'time_of_garden_title.png'); }
+    function download256() { exportPNG(256, 64,  'minecraft.png'); }
+  </script>
+</body>
+</html>

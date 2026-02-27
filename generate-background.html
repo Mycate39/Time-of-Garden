@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fond Menu — Create × Time of Garden</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #080706;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 24px;
+      font-family: sans-serif;
+      color: #ccc;
+    }
+    h1 { color: #C8A84B; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
+    canvas { max-width: 100%; border: 2px solid #2a2520; cursor: pointer; }
+    .btns { display: flex; gap: 12px; }
+    button {
+      background: #3A2E0A;
+      color: #C8A84B;
+      border: 1px solid #7A6420;
+      padding: 10px 24px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    button:hover { background: #7A6420; color: #E8C860; }
+    small { color: #444; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>⚙ Fond Menu — Create × Time of Garden</h1>
+  <canvas id="c" width="1920" height="1080" title="Clic pour regénérer"></canvas>
+  <div class="btns">
+    <button onclick="render(true)">↻ Regénérer</button>
+    <button onclick="dl()">⬇ Télécharger PNG 1920×1080</button>
+  </div>
+  <small>Clic sur l'image pour un angle de rotation différent · Utilise ce fichier dans FancyMenu comme fond d'écran</small>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const W = 1920, H = 1080;
+
+// ── Palette Create mod ────────────────────────────────────────────
+const P = {
+  bg0:      '#0a0806',
+  bg1:      '#161310',
+  bg2:      '#1c1916',
+  bg3:      '#221e1a',
+  bgEdge:   '#070504',
+  brass:    '#C8A84B',
+  brassL:   '#E8C860',
+  brassD:   '#7A6420',
+  brassDD:  '#3A2E0A',
+  copper:   '#B87333',
+  copperL:  '#D48F50',
+  copperD:  '#7A4E22',
+  copperDD: '#3A2410',
+  iron:     '#484848',
+  ironL:    '#686868',
+  ironD:    '#282828',
+  ironDD:   '#101010',
+};
+
+// ── Tiled stone background ────────────────────────────────────────
+function drawBg() {
+  const T = 48;
+  const sh = [P.bg1, P.bg2, P.bg1, P.bg3, P.bg2, P.bg1, P.bg3];
+
+  ctx.fillStyle = P.bg0;
+  ctx.fillRect(0, 0, W, H);
+
+  for (let ty = 0; ty < H; ty += T) {
+    for (let tx = 0; tx < W; tx += T) {
+      const i = ((tx / T * 13 + ty / T * 7) | 0) % sh.length;
+      ctx.fillStyle = sh[i];
+      ctx.fillRect(tx + 1, ty + 1, T - 1, T - 1);
+
+      // Top and left darker edge (tile depth)
+      ctx.fillStyle = P.bgEdge;
+      ctx.fillRect(tx, ty, T, 1);
+      ctx.fillRect(tx, ty, 1, T);
+
+      // Faint cracks
+      const seed = (tx * 17 + ty * 11) % 100;
+      if (seed < 10) {
+        ctx.fillStyle = P.bgEdge;
+        ctx.fillRect(tx + 6 + (seed * 4) % (T - 14), ty + 4 + (seed * 7) % (T - 10), 2 + seed % 6, 1);
+        if (seed < 4)
+          ctx.fillRect(tx + 10 + seed * 3, ty + 12, 1, 3 + seed * 2);
+      }
+    }
+  }
+}
+
+// ── Radial glow ───────────────────────────────────────────────────
+function glow(cx, cy, r, rr, gg, bb, a) {
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0, `rgba(${rr},${gg},${bb},${a})`);
+  g.addColorStop(1, `rgba(${rr},${gg},${bb},0)`);
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+}
+
+// ── Horizontal pipe ───────────────────────────────────────────────
+function pipeH(x1, x2, y, h, col, colL, colD) {
+  const yy = (y - h / 2) | 0;
+  ctx.fillStyle = colD; ctx.fillRect(x1 | 0, yy + h, (x2 - x1) | 0, (h * 0.22) | 0);
+  ctx.fillStyle = col;  ctx.fillRect(x1 | 0, yy,     (x2 - x1) | 0, h);
+  ctx.fillStyle = colL; ctx.fillRect(x1 | 0, yy,     (x2 - x1) | 0, Math.max(2, (h * 0.13) | 0));
+  ctx.fillStyle = colD; ctx.fillRect(x1 | 0, yy + h - Math.max(2, (h * 0.13) | 0), (x2 - x1) | 0, Math.max(2, (h * 0.13) | 0));
+}
+
+// ── Vertical pipe ─────────────────────────────────────────────────
+function pipeV(x, y1, y2, w, col, colL, colD) {
+  const xx = (x - w / 2) | 0;
+  ctx.fillStyle = colD; ctx.fillRect(xx + w,                                   y1 | 0, (w * 0.22) | 0, (y2 - y1) | 0);
+  ctx.fillStyle = col;  ctx.fillRect(xx,                                        y1 | 0, w,              (y2 - y1) | 0);
+  ctx.fillStyle = colL; ctx.fillRect(xx,                                        y1 | 0, Math.max(2, (w * 0.13) | 0), (y2 - y1) | 0);
+  ctx.fillStyle = colD; ctx.fillRect(xx + w - Math.max(2, (w * 0.13) | 0), y1 | 0, Math.max(2, (w * 0.13) | 0), (y2 - y1) | 0);
+}
+
+// ── Pipe flange (square junction piece) ──────────────────────────
+function flange(x, y, s, col, colL, colD) {
+  const h = (s / 2) | 0;
+  ctx.fillStyle = colD; ctx.fillRect((x - h + 2) | 0, (y - h + 2) | 0, s, s);
+  ctx.fillStyle = col;  ctx.fillRect((x - h)     | 0, (y - h)     | 0, s, s);
+  ctx.fillStyle = colL; ctx.fillRect((x - h)     | 0, (y - h)     | 0, s, 3);
+  // Corner bolts
+  const b = Math.max(5, (s * 0.13) | 0);
+  [[-0.34, -0.34], [0.34, -0.34], [-0.34, 0.34], [0.34, 0.34]].forEach(([bx, by]) => {
+    const bxp = (x + bx * s - b / 2) | 0;
+    const byp = (y + by * s - b / 2) | 0;
+    ctx.fillStyle = colD;  ctx.fillRect(bxp + 1, byp + 1, b, b);
+    ctx.fillStyle = colD;  ctx.fillRect(bxp,     byp,     b, b);
+    ctx.fillStyle = colL;  ctx.fillRect(bxp,     byp,     b - 1, b - 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(bxp, byp, b - 1, 1);
+  });
+}
+
+// ── Bolt row along a pipe ─────────────────────────────────────────
+function boltsH(x1, x2, y, spacing, sz) {
+  for (let bx = x1 + spacing / 2; bx < x2; bx += spacing) {
+    const bxi = bx | 0, byi = y | 0;
+    ctx.fillStyle = P.ironDD; ctx.fillRect(bxi - (sz/2|0) + 1, byi - (sz/2|0) + 1, sz, sz);
+    ctx.fillStyle = P.ironD;  ctx.fillRect(bxi - (sz/2|0),     byi - (sz/2|0),     sz, sz);
+    ctx.fillStyle = P.ironL;  ctx.fillRect(bxi - (sz/2|0),     byi - (sz/2|0),     sz - 1, sz - 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(bxi - (sz/2|0), byi - (sz/2|0), sz - 1, 1);
+  }
+}
+
+// ── Gear ──────────────────────────────────────────────────────────
+function drawGear(cx, cy, R, teeth, col, colL, colD, colDD, angle) {
+  const innerR  = R * 0.73;
+  const hubR    = innerR * 0.36;
+  const ta      = (Math.PI * 2) / teeth;
+  const halfGap = ta * 0.13;
+
+  // Build gear outline path
+  function path() {
+    ctx.beginPath();
+    for (let i = 0; i < teeth; i++) {
+      const base = (i / teeth) * Math.PI * 2;
+      const vs = base - halfGap;
+      const ve = base + halfGap;
+      const te = base + ta - halfGap;
+      ctx.arc(0, 0, innerR, vs, ve);
+      ctx.lineTo(Math.cos(ve) * R, Math.sin(ve) * R);
+      ctx.arc(0, 0, R, ve, te);
+      ctx.lineTo(Math.cos(te) * innerR, Math.sin(te) * innerR);
+    }
+    ctx.closePath();
+  }
+
+  ctx.save();
+  ctx.translate(cx | 0, cy | 0);
+  ctx.rotate(angle);
+
+  // Drop shadow
+  ctx.save();
+  ctx.translate(6, 7);
+  path();
+  ctx.fillStyle = colDD;
+  ctx.fill();
+  ctx.restore();
+
+  // Main body — radial gradient for 3D depth
+  path();
+  const g = ctx.createRadialGradient(-R * 0.22, -R * 0.22, R * 0.04, 0, 0, R * 1.06);
+  g.addColorStop(0,    colL);
+  g.addColorStop(0.42, col);
+  g.addColorStop(1,    colD);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.strokeStyle = colDD;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Spokes
+  const sc = Math.max(3, Math.round(teeth / 4));
+  for (let i = 0; i < sc; i++) {
+    const sa = (i / sc) * Math.PI * 2;
+    const sw = (innerR * 0.095) | 0;
+    ctx.save();
+    ctx.rotate(sa);
+    ctx.fillStyle = colDD; ctx.fillRect((-sw/2+2)|0, (innerR*0.40+2)|0, sw, (innerR*0.50)|0);
+    ctx.fillStyle = col;   ctx.fillRect((-sw/2)  |0, (innerR*0.40)  |0, sw, (innerR*0.50)|0);
+    ctx.restore();
+  }
+
+  // Hub ring
+  ctx.beginPath(); ctx.arc(0, 0, hubR * 1.28, 0, Math.PI * 2);
+  ctx.fillStyle = colDD; ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, hubR * 1.12, 0, Math.PI * 2);
+  const hg = ctx.createRadialGradient(-hubR * 0.3, -hubR * 0.3, 0, 0, 0, hubR * 1.15);
+  hg.addColorStop(0, colL); hg.addColorStop(1, colD);
+  ctx.fillStyle = hg; ctx.fill();
+
+  // Center bore
+  ctx.beginPath(); ctx.arc(0, 0, hubR * 0.48, 0, Math.PI * 2);
+  ctx.fillStyle = P.bg0; ctx.fill();
+  ctx.strokeStyle = colDD; ctx.lineWidth = 2; ctx.stroke();
+
+  ctx.restore();
+}
+
+// ── Dark vignette (corner gradient) ──────────────────────────────
+function vignette() {
+  [[0,0],[W,0],[0,H],[W,H]].forEach(([x,y]) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 720);
+    g.addColorStop(0, 'rgba(0,0,0,0.80)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  });
+}
+
+// ── MAIN ─────────────────────────────────────────────────────────
+let rot = Math.random() * Math.PI * 2;
+
+function render(randomize) {
+  if (randomize) rot = Math.random() * Math.PI * 2;
+  const a = rot;
+
+  // 1 — Stone tile background
+  drawBg();
+
+  // 2 — Atmospheric glow (forge/lava sources)
+  glow(160,  1050, 700, 255, 70,  0,  0.28);
+  glow(1820, 80,   550, 200, 168, 75, 0.18);
+  glow(960,  660,  420, 255, 140, 0,  0.10);
+
+  // 3 — Iron pipes
+  //   Main horizontal  y=660
+  pipeH(0, W, 660, 54, P.iron, P.ironL, P.ironD);
+  boltsH(0, W, 660, 88, 9);
+  //   Upper horizontal  y=270
+  pipeH(350, 1650, 270, 32, P.iron, P.ironL, P.ironD);
+  boltsH(350, 1650, 270, 70, 7);
+  //   Left vertical  x=460
+  pipeV(460, 0, H, 38, P.iron, P.ironL, P.ironD);
+  //   Right vertical  x=1560
+  pipeV(1560, 50, 660, 32, P.iron, P.ironL, P.ironD);
+  //   Short copper bypass pipe (decorative)
+  pipeH(600, 1040, 490, 22, P.copper, P.copperL, P.copperD);
+
+  // 4 — Flanges at intersections
+  flange(460,  660, 72, P.iron, P.ironL, P.ironD);
+  flange(1560, 660, 64, P.iron, P.ironL, P.ironD);
+  flange(460,  270, 56, P.iron, P.ironL, P.ironD);
+  flange(1560, 270, 56, P.iron, P.ironL, P.ironD);
+
+  // 5 — Gears (back to front, largest first)
+  //   Giant off-screen lower-left (lava zone)
+  drawGear(-70, 1020, 410, 20, P.brass, P.brassL, P.brassD, P.brassDD, a * 0.38);
+  //   Giant off-screen upper-right
+  drawGear(1990, 60, 330, 17, P.brass, P.brassL, P.brassD, P.brassDD, -a * 0.32);
+  //   Medium — left pipe × main H pipe
+  drawGear(460, 660, 205, 14, P.brass, P.brassL, P.brassD, P.brassDD,  a * 0.72);
+  //   Medium — right pipe × main H pipe
+  drawGear(1560, 660, 178, 12, P.copper, P.copperL, P.copperD, P.copperDD, -a * 0.84);
+  //   Medium — left pipe × upper H pipe
+  drawGear(460, 270, 115, 10, P.brass, P.brassL, P.brassD, P.brassDD,  a * 1.28);
+  //   Medium — right pipe × upper H pipe
+  drawGear(1560, 270, 98, 10, P.copper, P.copperL, P.copperD, P.copperDD, -a * 1.52);
+  //   Small — center of main H pipe
+  drawGear(960, 660, 88, 8, P.brass, P.brassL, P.brassD, P.brassDD,  a * 1.80);
+  //   Small — center of upper H pipe
+  drawGear(960, 270, 65, 8, P.copper, P.copperL, P.copperD, P.copperDD, -a * 2.20);
+  //   Tiny accent gear (free-floating)
+  drawGear(700, 490, 46, 7, P.brass, P.brassL, P.brassD, P.brassDD, a * 3.10);
+  drawGear(1000, 490, 40, 7, P.copper, P.copperL, P.copperD, P.copperDD, -a * 3.60);
+
+  // 6 — Second glow pass (atmosphere, on top of gears)
+  glow(160, 1050, 800, 255, 50, 0, 0.12);
+  glow(960, 660, 300, 255, 160, 40, 0.07);
+
+  // 7 — UI fades (Minecraft style — top and bottom darker)
+  const tF = ctx.createLinearGradient(0, 0, 0, 180);
+  tF.addColorStop(0, 'rgba(0,0,0,0.82)');
+  tF.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = tF; ctx.fillRect(0, 0, W, 180);
+
+  const bF = ctx.createLinearGradient(0, H - 140, 0, H);
+  bF.addColorStop(0, 'rgba(0,0,0,0)');
+  bF.addColorStop(1, 'rgba(0,0,0,0.80)');
+  ctx.fillStyle = bF; ctx.fillRect(0, H - 140, W, 140);
+
+  // 8 — Corner vignette
+  vignette();
+}
+
+render(false);
+
+canvas.addEventListener('click', () => render(true));
+
+function dl() {
+  const a = document.createElement('a');
+  a.download = 'create_menu_background.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

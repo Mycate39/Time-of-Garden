@@ -1,6 +1,6 @@
 {
   "name": "time-of-garden",
-  "version": "1.0.11",
+  "version": "2.0.0",
   "description": "Launcher Time of Garden",
   "main": "out/main/index.js",
   "scripts": {
@@ -76,13 +76,17 @@
       {
         "from": "resources/fancymenu",
         "to": "fancymenu"
+      },
+      {
+        "from": "resources/resourcepacks",
+        "to": "resourcepacks"
       }
     ],
     "files": [
       "out/**/*"
     ],
     "releaseInfo": {
-      "releaseNotes": "The launcher is now more stable"
+      "releaseNotes": "Version 2.0.0 — Refonte complète du launcher : nouveau thème Create/industriel, animations, mises à jour automatiques avec confirmation, resource pack par défaut intégré."
     },
     "publish": {
       "provider": "github",

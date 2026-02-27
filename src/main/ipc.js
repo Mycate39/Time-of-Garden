@@ -10,7 +10,6 @@ import { searchMods, getModDownload, getSuggestedMods, getVersionByHash, getModI
 import { searchCurseForgeMods, getCurseForgeDownload, getSuggestedCurseForgeMods } from './curseforge'
 import { createHash } from 'crypto'
 import { downloadBuffer, uploadModToGitHub, listModsOnGitHub, deleteModFromGitHub, pushModsManifest } from './githubUploader'
-import { startBot, stopBot, getBotStatus } from './keepaliveBot'
 
 const store = new Store()
 
@@ -334,21 +333,6 @@ export function registerIpcHandlers(win) {
     }
     return results
   })
-
-  // --- Bot keepalive ---
-  ipcMain.handle('bot:start', () => {
-    startBot(({ status, detail }) => {
-      win.webContents.send('bot:status', { status, detail: detail ?? '' })
-    })
-    return { status: getBotStatus() }
-  })
-
-  ipcMain.handle('bot:stop', () => {
-    stopBot()
-    return { status: 'stopped' }
-  })
-
-  ipcMain.handle('bot:get-status', () => ({ status: getBotStatus() }))
 
   // --- Lancement du jeu ---
   ipcMain.handle('game:launch', async () => {

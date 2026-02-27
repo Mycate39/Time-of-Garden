@@ -4,9 +4,7 @@ export default function ConsoleLog({ logs }) {
   const ref = useRef(null)
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.scrollTop = ref.current.scrollHeight
-    }
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight
   }, [logs])
 
   const classify = (msg) => {
@@ -19,10 +17,10 @@ export default function ConsoleLog({ logs }) {
 
   return (
     <div className="console-log" ref={ref}>
-      {logs.length === 0 && <p className="info">En attente de logs...</p>}
-      {logs.map((log, i) => (
-        <p key={i} className={classify(log)}>{log}</p>
-      ))}
+      {logs.length === 0
+        ? <p className="info">En attente de logs...</p>
+        : logs.map((log, i) => <p key={i} className={classify(log)}>{log}</p>)
+      }
     </div>
   )
 }

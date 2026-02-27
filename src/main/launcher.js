@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import { Client } from 'minecraft-launcher-core'
 import { join } from 'path'
-import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync, readFileSync, writeFileSync } from 'fs'
 import { createWriteStream } from 'fs'
 import { get } from 'https'
 import { execSync } from 'child_process'
@@ -169,6 +169,63 @@ function syncFancyMenu(gameDir, onLog) {
 }
 
 /**
+ * Répertoire source des resource packs embarqués.
+ */
+function getResourcePacksSourceDir() {
+  if (app.isPackaged) {
+    return join(process.resourcesPath, 'resourcepacks')
+  }
+  return join(__dirname, '../../resources/resourcepacks')
+}
+
+/**
+ * Synchronise les resource packs vers le dossier resourcepacks du jeu,
+ * puis active ceux trouvés dans options.txt.
+ */
+function syncResourcePacks(gameDir, onLog) {
+  const sourceDir = getResourcePacksSourceDir()
+  if (!existsSync(sourceDir)) {
+    onLog('[Launcher] Aucun resource pack à synchroniser.')
+    return
+  }
+
+  const packs = readdirSync(sourceDir).filter(f => f.endsWith('.zip'))
+  if (packs.length === 0) {
+    onLog('[Launcher] Aucun resource pack trouvé.')
+    return
+  }
+
+  const destDir = join(gameDir, 'resourcepacks')
+  if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true })
+
+  for (const pack of packs) {
+    copyFileSync(join(sourceDir, pack), join(destDir, pack))
+    onLog(`[Launcher] Resource pack installé : ${pack}`)
+  }
+
+  // Activer les resource packs dans options.txt
+  const optionsPath = join(gameDir, 'options.txt')
+  let lines = []
+  if (existsSync(optionsPath)) {
+    lines = readFileSync(optionsPath, 'utf8').split('\n')
+  }
+
+  // Construire la valeur resourcePacks avec tous les packs
+  const packEntries = packs.map(p => `file\\/${p}`)
+  const resourcePacksValue = `resourcePacks:["vanilla","${packEntries.join('","')}"]`
+
+  const idx = lines.findIndex(l => l.startsWith('resourcePacks:'))
+  if (idx >= 0) {
+    lines[idx] = resourcePacksValue
+  } else {
+    lines.push(resourcePacksValue)
+  }
+
+  writeFileSync(optionsPath, lines.join('\n'), 'utf8')
+  onLog(`[Launcher] ${packs.length} resource pack(s) activé(s) dans options.txt.`)
+}
+
+/**
  * Lance Minecraft avec Forge.
  * Émet les événements de progression et de logs via les callbacks.
  */
@@ -200,6 +257,10 @@ export async function launchGame({ onProgress, onLog, onClose }) {
   // Synchronisation FancyMenu
   onLog('[Launcher] Synchronisation FancyMenu...')
   syncFancyMenu(gameDir, onLog)
+
+  // Synchronisation Resource Packs
+  onLog('[Launcher] Synchronisation resource packs...')
+  syncResourcePacks(gameDir, onLog)
 
   // Téléchargement de l'installer Forge si nécessaire
   if (!existsSync(forgeInstallerPath)) {
