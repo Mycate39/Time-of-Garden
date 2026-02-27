@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Titlebar from '../components/Titlebar'
 import ProgressBar from '../components/ProgressBar'
 import ConsoleLog from '../components/ConsoleLog'
@@ -43,8 +43,26 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
   const [launcherUpdateProgress, setLauncherUpdateProgress] = useState(null) // 0-100
   const [launcherUpdateReady, setLauncherUpdateReady] = useState(false)
 
+  // Server status
+  const [serverOnline, setServerOnline] = useState(null) // null | true | false
+  const serverPingRef = useRef(null)
+
+  // Bot keepalive (admin)
+  const [botStatus, setBotStatus] = useState('stopped') // 'stopped' | 'connecting' | 'online' | 'reconnecting'
+
+  const checkServerStatus = async () => {
+    try {
+      const result = await window.launcher.serverStatus()
+      setServerOnline(result.online)
+    } catch {
+      setServerOnline(false)
+    }
+  }
+
   useEffect(() => {
-    window.launcher.getSettings().then(setSettings)
+    window.launcher.getSettings().then((s) => {
+      setSettings(s)
+    })
 
     window.launcher.onProgress((_, e) => {
       setProgress(e)
@@ -58,6 +76,8 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
       setStatus('idle')
       setProgress(null)
       setLogs((prev) => [...prev, `[Launcher] Jeu fermé (code ${code})`])
+      // Re-vérifie les mods quand le jeu se ferme
+      checkModsUpdate()
     })
 
     window.launcher.onModsProgress((_, p) => {
@@ -68,8 +88,20 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
     window.launcher.onUpdateProgress((_, pct) => setLauncherUpdateProgress(pct))
     window.launcher.onUpdateReady(() => setLauncherUpdateReady(true))
 
+    // Statut bot au chargement
+    window.launcher.getBotStatus().then(({ status }) => setBotStatus(status))
+    window.launcher.onBotStatus((_, { status }) => setBotStatus(status))
+
     // Vérification des mods au démarrage
     checkModsUpdate()
+
+    // Vérification du statut serveur au démarrage + toutes les 30 secondes
+    checkServerStatus()
+    serverPingRef.current = setInterval(checkServerStatus, 30000)
+
+    return () => {
+      if (serverPingRef.current) clearInterval(serverPingRef.current)
+    }
   }, [])
 
   const checkModsUpdate = async () => {
@@ -110,6 +142,14 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
     setTimeout(() => setLogsCopied(false), 2000)
   }
 
+  const handleToggleBot = async () => {
+    if (botStatus === 'stopped') {
+      await window.launcher.startBot()
+    } else {
+      await window.launcher.stopBot()
+    }
+  }
+
   const handlePlay = async () => {
     setStatus('launching')
     setLogs([])
@@ -123,7 +163,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
     }
   }
 
-  const serverDisplay = settings?.serverIp || 'Non configuré'
+  const serverDescription = settings?.serverDescription || ''
 
   return (
     <>
@@ -159,9 +199,17 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
               </div>
             </div>
 
-            {/* Adresse serveur */}
-            <div className="server-address">
-              🌐 Serveur : <span>{serverDisplay}</span>
+            {/* Statut serveur */}
+            <div className="server-status-bar">
+              <span
+                className={`server-dot ${serverOnline === true ? 'online' : serverOnline === false ? 'offline' : 'unknown'}`}
+              />
+              <span className="server-status-label">
+                {serverOnline === true ? 'Serveur en ligne' : serverOnline === false ? 'Serveur hors ligne' : 'Vérification...'}
+              </span>
+              {serverDescription && (
+                <span className="server-description">{serverDescription}</span>
+              )}
             </div>
 
             {/* Bannière mise à jour mods */}
@@ -286,11 +334,21 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
                   </button>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {profile?.name === ADMIN_USERNAME && (
-                  <button className="footer-btn" onClick={onModLibrary} title="Bibliothèque de mods (admin)">
-                    📚
-                  </button>
+                  <>
+                    <button className="footer-btn" onClick={onModLibrary} title="Bibliothèque de mods (admin)">
+                      📚
+                    </button>
+                    <button
+                      className={`footer-btn bot-btn ${botStatus}`}
+                      onClick={handleToggleBot}
+                      title={`Bot keepalive : ${botStatus}`}
+                      disabled={botStatus === 'connecting' || botStatus === 'reconnecting'}
+                    >
+                      🤖 {botStatus === 'stopped' ? 'Bot OFF' : botStatus === 'online' ? 'Bot ON' : '...'}
+                    </button>
+                  </>
                 )}
                 <button className="footer-btn" onClick={onSettings}>⚙ Paramètres</button>
                 <button className="footer-btn danger" onClick={onLogout}>Déconnexion</button>

@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('launcher', {
 
   // Admin — bibliothèque de mods
   searchMods: (query, source) => ipcRenderer.invoke('admin:search-mods', { query, source }),
-  addMod: (projectId, source) => ipcRenderer.invoke('admin:add-mod', { projectId, source }),
+  addMod: (projectId, source, meta) => ipcRenderer.invoke('admin:add-mod', { projectId, source, meta }),
   onAddProgress: (cb) => ipcRenderer.on('admin:add-progress', cb),
   getSuggestions: (source) => ipcRenderer.invoke('admin:get-suggestions', source),
   getInstalledMap: () => ipcRenderer.invoke('admin:get-installed-map'),
@@ -35,6 +35,18 @@ contextBridge.exposeInMainWorld('launcher', {
   deleteMod: (filename) => ipcRenderer.invoke('admin:delete-mod', filename),
   importLocalMod: () => ipcRenderer.invoke('admin:import-local-mod'),
   onImportProgress: (cb) => ipcRenderer.on('admin:import-progress', cb),
+  checkModUpdates: () => ipcRenderer.invoke('admin:check-mod-updates'),
+  applyModUpdate: (data) => ipcRenderer.invoke('admin:apply-mod-update', data),
+  onModUpdateProgress: (cb) => ipcRenderer.on('admin:mod-update-progress', cb),
+
+  // Statut serveur Minecraft
+  serverStatus: () => ipcRenderer.invoke('server:status'),
+
+  // Bot keepalive
+  startBot: () => ipcRenderer.invoke('bot:start'),
+  stopBot: () => ipcRenderer.invoke('bot:stop'),
+  getBotStatus: () => ipcRenderer.invoke('bot:get-status'),
+  onBotStatus: (cb) => ipcRenderer.on('bot:status', cb),
 
   // Mises à jour launcher
   onUpdateAvailable: (cb) => ipcRenderer.on('updater:available', cb),

@@ -5,9 +5,9 @@ export default function Settings({ onBack }) {
   const [settings, setSettings] = useState({
     ramMin: 2,
     ramMax: 4,
-    serverIp: '',
     javaPath: 'java',
-    githubToken: ''
+    githubToken: '',
+    serverDescription: ''
   })
   const [saved, setSaved] = useState(false)
 
@@ -40,13 +40,14 @@ export default function Settings({ onBack }) {
           <div className="settings-group">
             <h3>Serveur</h3>
             <div className="setting-row">
-              <label className="setting-label">Adresse IP du serveur</label>
-              <input
+              <label className="setting-label">Description du serveur (affiché sur l'accueil)</label>
+              <textarea
                 className="setting-input"
-                type="text"
-                placeholder="exemple : play.monserveur.fr ou 192.168.1.1:25565"
-                value={settings.serverIp}
-                onChange={(e) => handleChange('serverIp', e.target.value)}
+                rows={3}
+                placeholder="Une courte description de votre serveur..."
+                value={settings.serverDescription}
+                onChange={(e) => handleChange('serverDescription', e.target.value)}
+                style={{ resize: 'vertical', fontFamily: 'inherit' }}
               />
             </div>
           </div>
@@ -119,7 +120,6 @@ export default function Settings({ onBack }) {
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
               Minecraft 1.20.1 avec Forge nécessite Java 17 ou supérieur.
-              Sur macOS, installe-le via Homebrew : <code style={{ color: 'var(--accent)' }}>brew install openjdk@17</code>
             </p>
           </div>
 

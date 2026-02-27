@@ -257,6 +257,43 @@ html, body, #root {
   color: var(--text-muted);
 }
 
+.server-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.server-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.server-dot.online  { background: #4ade80; box-shadow: 0 0 6px #4ade8088; }
+.server-dot.offline { background: #f87171; }
+.server-dot.unknown { background: var(--text-muted); }
+
+.server-status-label {
+  font-weight: 500;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.server-description {
+  color: var(--text-muted);
+  font-size: 12px;
+  border-left: 1px solid var(--border);
+  padding-left: 10px;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
 .server-address {
   display: flex;
   align-items: center;
@@ -438,6 +475,9 @@ html, body, #root {
 
 .footer-btn:hover { background: var(--bg-card); color: var(--text); }
 .footer-btn.danger:hover { background: rgba(224,85,85,0.1); border-color: var(--red); color: var(--red); }
+.footer-btn.bot-btn.online { border-color: #4ade80; color: #4ade80; }
+.footer-btn.bot-btn.connecting,
+.footer-btn.bot-btn.reconnecting { border-color: #fbbf24; color: #fbbf24; opacity: 0.7; cursor: default; }
 
 /* =================== SETTINGS PAGE =================== */
 .settings-page {
@@ -780,11 +820,12 @@ html, body, #root {
 }
 
 /* Animations d'entrée échelonnées */
-.player-card    { animation: slide-up 0.4s 0.05s ease both; }
-.server-address { animation: slide-up 0.4s 0.10s ease both; }
-.mods-banner    { animation: banner-in 0.3s ease both; }
-.launch-section { animation: slide-up 0.4s 0.18s ease both; }
-.home-footer    { animation: slide-up 0.4s 0.24s ease both; }
+.player-card       { animation: slide-up 0.4s 0.05s ease both; }
+.server-status-bar { animation: slide-up 0.4s 0.10s ease both; }
+.server-address    { animation: slide-up 0.4s 0.10s ease both; }
+.mods-banner       { animation: banner-in 0.3s ease both; }
+.launch-section    { animation: slide-up 0.4s 0.18s ease both; }
+.home-footer       { animation: slide-up 0.4s 0.24s ease both; }
 
 /* Login — fond animé */
 .login-page {

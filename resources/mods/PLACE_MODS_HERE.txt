@@ -1,6 +1,0 @@
-Place tes fichiers .jar de mods ici.
-Ils seront automatiquement copiés dans le dossier mods du jeu au lancement.
-
-Exemple :
-- jei-1.20.1-forge-15.3.0.4.jar
-- create-0.5.1.f-forge-mc1.20.1.jar

@@ -16,7 +16,9 @@
     "electron-store": "^7.0.3",
     "electron-updater": "^6.8.3",
     "minecraft-launcher-core": "^3.17.0",
-    "msmc": "^5.0.5"
+    "mineflayer": "^4.23.0",
+    "msmc": "^5.0.5",
+    "ssh2-sftp-client": "^10.0.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

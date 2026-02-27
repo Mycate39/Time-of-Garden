@@ -43,6 +43,17 @@ function normalizeHit(hit) {
 }
 
 /**
+ * Identifie un mod par son hash SHA1 (fichier .jar).
+ * Retourne { project_id, version_id, filename } ou null si inconnu.
+ */
+export async function getVersionByHash(sha1) {
+  const data = await modrinthGet(`/version_file/${sha1}?algorithm=sha1`)
+  if (!data || data.error) return null
+  const file = data.files?.find(f => f.primary) || data.files?.[0]
+  return { project_id: data.project_id, version_id: data.id, filename: file?.filename ?? null }
+}
+
+/**
  * Retourne les mods Modrinth les plus téléchargés (Forge 1.20.1).
  */
 export async function getSuggestedMods() {
@@ -55,6 +66,21 @@ export async function getSuggestedMods() {
     `/search?facets=${facets}&index=downloads&limit=12`
   )
   return (data?.hits ?? []).map(normalizeHit)
+}
+
+/**
+ * Récupère les infos d'un projet Modrinth (title, description, icon_url, client_side, server_side).
+ */
+export async function getModInfo(projectId) {
+  const data = await modrinthGet(`/project/${projectId}`)
+  if (!data || data.error) return null
+  return {
+    title: data.title ?? null,
+    description: data.description ?? null,
+    icon_url: data.icon_url ?? null,
+    client_side: data.client_side ?? null,
+    server_side: data.server_side ?? null
+  }
 }
 
 /**

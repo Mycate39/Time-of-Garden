@@ -135,6 +135,28 @@ export async function deleteModFromGitHub(filename) {
 }
 
 /**
+ * Pousse un nouveau mods.json sur le repo GitHub.
+ * Crée le fichier s'il n'existe pas encore, le met à jour sinon.
+ */
+export async function pushModsManifest(manifest) {
+  const content = Buffer.from(JSON.stringify(manifest, null, 2)).toString('base64')
+  const { status: getStatus, data: existing } = await apiGet(`/repos/${GITHUB_REPO}/contents/mods.json`)
+  const sha = getStatus === 200 ? existing.sha : undefined
+
+  const body = {
+    message: `chore: update mods manifest v${manifest.version}`,
+    content,
+    branch: 'main'
+  }
+  if (sha) body.sha = sha
+
+  const result = await apiPut(`/repos/${GITHUB_REPO}/contents/mods.json`, body)
+  if (result.status !== 200 && result.status !== 201) {
+    throw new Error(`GitHub manifest push failed (${result.status})`)
+  }
+}
+
+/**
  * Upload un fichier .jar vers le repo GitHub.
  * Si le fichier existe déjà, le met à jour.
  */
