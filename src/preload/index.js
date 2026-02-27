@@ -26,10 +26,10 @@ contextBridge.exposeInMainWorld('launcher', {
   onModsProgress: (cb) => ipcRenderer.on('mods:progress', cb),
 
   // Admin — bibliothèque de mods
-  searchMods: (query, source) => ipcRenderer.invoke('admin:search-mods', { query, source }),
+  searchMods: (query) => ipcRenderer.invoke('admin:search-mods', { query }),
   addMod: (projectId, source, meta) => ipcRenderer.invoke('admin:add-mod', { projectId, source, meta }),
   onAddProgress: (cb) => ipcRenderer.on('admin:add-progress', cb),
-  getSuggestions: (source) => ipcRenderer.invoke('admin:get-suggestions', source),
+  getSuggestions: () => ipcRenderer.invoke('admin:get-suggestions'),
   getInstalledMap: () => ipcRenderer.invoke('admin:get-installed-map'),
   listMods: () => ipcRenderer.invoke('admin:list-mods'),
   deleteMod: (filename) => ipcRenderer.invoke('admin:delete-mod', filename),

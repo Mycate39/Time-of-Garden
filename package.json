@@ -35,7 +35,9 @@
     "directories": {
       "output": "dist"
     },
+    "icon": "build/icon.png",
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -50,6 +52,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "mac": {
+      "icon": "build/icon.icns",
       "target": [
         {
           "target": "dmg",
@@ -69,6 +72,10 @@
         "filter": [
           "**/*.jar"
         ]
+      },
+      {
+        "from": "resources/fancymenu",
+        "to": "fancymenu"
       }
     ],
     "files": [

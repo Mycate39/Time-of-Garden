@@ -7,7 +7,7 @@ import { login, getSavedProfile, logout } from './auth'
 import { launchGame } from './launcher'
 import { checkForUpdates, downloadMods, saveLocalManifest } from './modUpdater'
 import { searchMods, getModDownload, getSuggestedMods, getVersionByHash, getModInfo } from './modrinth'
-import { searchCurseForgeMods, getCurseForgeDownload } from './curseforge'
+import { searchCurseForgeMods, getCurseForgeDownload, getSuggestedCurseForgeMods } from './curseforge'
 import { createHash } from 'crypto'
 import { downloadBuffer, uploadModToGitHub, listModsOnGitHub, deleteModFromGitHub, pushModsManifest } from './githubUploader'
 import { startBot, stopBot, getBotStatus } from './keepaliveBot'
@@ -208,14 +208,29 @@ export function registerIpcHandlers(win) {
   })
 
   // --- Bibliothèque admin ---
-  ipcMain.handle('admin:search-mods', async (_, { query, source }) => {
-    if (source === 'curseforge') return searchCurseForgeMods(query)
-    return searchMods(query)
+  ipcMain.handle('admin:search-mods', async (_, { query }) => {
+    const [mrRes, cfRes] = await Promise.allSettled([
+      searchMods(query),
+      searchCurseForgeMods(query)
+    ])
+    const mr = mrRes.status === 'fulfilled' ? (mrRes.value ?? []) : []
+    const cf = cfRes.status === 'fulfilled' ? (cfRes.value ?? []) : []
+    // Modrinth en priorité — dédoublonnage par titre normalisé
+    const seen = new Set(mr.map(m => m.title.toLowerCase().trim()))
+    const cfFiltered = cf.filter(m => !seen.has(m.title.toLowerCase().trim()))
+    return [...mr, ...cfFiltered]
   })
 
-  ipcMain.handle('admin:get-suggestions', async (_, source) => {
-    if (source === 'curseforge') return []
-    return getSuggestedMods()
+  ipcMain.handle('admin:get-suggestions', async () => {
+    const [mrRes, cfRes] = await Promise.allSettled([
+      getSuggestedMods(),
+      getSuggestedCurseForgeMods()
+    ])
+    const mr = mrRes.status === 'fulfilled' ? (mrRes.value ?? []) : []
+    const cf = cfRes.status === 'fulfilled' ? (cfRes.value ?? []) : []
+    const seen = new Set(mr.map(m => m.title.toLowerCase().trim()))
+    const cfFiltered = cf.filter(m => !seen.has(m.title.toLowerCase().trim()))
+    return [...mr, ...cfFiltered]
   })
 
   ipcMain.handle('admin:get-installed-map', () => getInstalledMap())

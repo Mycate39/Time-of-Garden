@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Titlebar from '../components/Titlebar'
 import ProgressBar from '../components/ProgressBar'
 import ConsoleLog from '../components/ConsoleLog'
+import logo from '../assets/logo.png'
 
 const ADMIN_USERNAME = 'Mycate39'
 
@@ -172,7 +173,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
         <div className="home-content">
           {/* Panneau gauche */}
           <aside className="home-sidebar">
-            <div className="server-logo">🌍</div>
+            <img src={logo} alt="Time of Garden" className="server-logo" />
             <div className="server-name">Time of Garden</div>
             <div className="server-version">Forge 1.20.1</div>
             <div className="splash-text">{splashText}</div>

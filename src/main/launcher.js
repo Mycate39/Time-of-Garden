@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import { Client } from 'minecraft-launcher-core'
 import { join } from 'path'
-import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync } from 'fs'
 import { createWriteStream } from 'fs'
 import { get } from 'https'
 import { execSync } from 'child_process'
@@ -129,6 +129,46 @@ function syncMods(gameDir, onLog) {
 }
 
 /**
+ * Répertoire source des configs FancyMenu embarquées.
+ */
+function getFancyMenuSourceDir() {
+  if (app.isPackaged) {
+    return join(process.resourcesPath, 'fancymenu')
+  }
+  return join(__dirname, '../../resources/fancymenu')
+}
+
+/**
+ * Copie récursive d'un dossier.
+ */
+function copyDirSync(src, dest) {
+  if (!existsSync(dest)) mkdirSync(dest, { recursive: true })
+  for (const entry of readdirSync(src, { withFileTypes: true })) {
+    const srcPath = join(src, entry.name)
+    const destPath = join(dest, entry.name)
+    if (entry.isDirectory()) {
+      copyDirSync(srcPath, destPath)
+    } else {
+      copyFileSync(srcPath, destPath)
+    }
+  }
+}
+
+/**
+ * Synchronise les configs FancyMenu vers le dossier config du jeu.
+ */
+function syncFancyMenu(gameDir, onLog) {
+  const sourceDir = getFancyMenuSourceDir()
+  if (!existsSync(sourceDir) || readdirSync(sourceDir).filter(f => f !== '.gitkeep').length === 0) {
+    onLog('[Launcher] Aucune config FancyMenu à synchroniser.')
+    return
+  }
+  const destDir = join(gameDir, 'config', 'fancymenu')
+  copyDirSync(sourceDir, destDir)
+  onLog('[Launcher] Configs FancyMenu synchronisées.')
+}
+
+/**
  * Lance Minecraft avec Forge.
  * Émet les événements de progression et de logs via les callbacks.
  */
@@ -156,6 +196,10 @@ export async function launchGame({ onProgress, onLog, onClose }) {
   // Synchronisation des mods
   onLog('[Launcher] Synchronisation des mods...')
   syncMods(gameDir, onLog)
+
+  // Synchronisation FancyMenu
+  onLog('[Launcher] Synchronisation FancyMenu...')
+  syncFancyMenu(gameDir, onLog)
 
   // Téléchargement de l'installer Forge si nécessaire
   if (!existsSync(forgeInstallerPath)) {

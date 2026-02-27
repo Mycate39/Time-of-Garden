@@ -192,8 +192,10 @@ html, body, #root {
 }
 
 .server-logo {
-  font-size: 72px;
-  line-height: 1;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 16px;
 }
 
 .server-name {

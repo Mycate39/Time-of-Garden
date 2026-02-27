@@ -13,8 +13,7 @@ function getSideBadge(mod) {
 }
 
 export default function ModLibrary({ onBack }) {
-  const [tab, setTab] = useState('modrinth') // 'modrinth' | 'curseforge' | 'installed'
-  const source = tab === 'installed' ? 'modrinth' : tab
+  const [tab, setTab] = useState('browse') // 'browse' | 'installed'
 
   // --- Recherche / suggestions ---
   const [query, setQuery] = useState('')
@@ -65,7 +64,7 @@ export default function ModLibrary({ onBack }) {
     } else {
       setSuggestions([])
       setLoadingSuggestions(true)
-      window.launcher.getSuggestions(tab)
+      window.launcher.getSuggestions()
         .then(data => setSuggestions(data ?? []))
         .catch(() => setSuggestions([]))
         .finally(() => setLoadingSuggestions(false))
@@ -116,7 +115,7 @@ export default function ModLibrary({ onBack }) {
     setLoading(true)
     const timer = setTimeout(async () => {
       try {
-        const hits = await window.launcher.searchMods(query.trim(), source)
+        const hits = await window.launcher.searchMods(query.trim())
         setResults(hits)
       } catch {
         setResults([])
@@ -124,7 +123,7 @@ export default function ModLibrary({ onBack }) {
       setLoading(false)
     }, 400)
     return () => clearTimeout(timer)
-  }, [query, source])
+  }, [query])
 
   const processQueue = async () => {
     if (processingRef.current) return
@@ -155,7 +154,7 @@ export default function ModLibrary({ onBack }) {
       client_side: hit.client_side ?? null,
       server_side: hit.server_side ?? null
     }
-    queueRef.current.push({ projectId: hit.project_id, src: source, meta })
+    queueRef.current.push({ projectId: hit.project_id, src: hit.source ?? 'modrinth', meta })
     setAddStatus(prev => ({ ...prev, [hit.project_id]: { step: 'queued' } }))
     processQueue()
   }
@@ -233,11 +232,8 @@ export default function ModLibrary({ onBack }) {
         <div className="settings-body">
           {/* Onglets */}
           <div className="source-tabs">
-            <button className={`source-tab${tab === 'modrinth' ? ' active' : ''}`} onClick={() => setTab('modrinth')}>
-              Modrinth
-            </button>
-            <button className={`source-tab${tab === 'curseforge' ? ' active' : ''}`} onClick={() => setTab('curseforge')}>
-              CurseForge
+            <button className={`source-tab${tab === 'browse' ? ' active' : ''}`} onClick={() => setTab('browse')}>
+              Parcourir
             </button>
             <button className={`source-tab${tab === 'installed' ? ' active' : ''}`} onClick={() => setTab('installed')}>
               Installés

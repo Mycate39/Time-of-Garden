@@ -1,0 +1,32 @@
+type = customizablemenus
+
+net.minecraft.client.gui.screens.TitleScreen {
+}
+
+net.minecraft.client.gui.screens.GenericDirtMessageScreen {
+}
+
+net.minecraft.client.gui.screens.OptionsScreen {
+}
+
+net.minecraftforge.client.gui.ModListScreen {
+}
+
+net.minecraft.client.gui.screens.DisconnectedScreen {
+}
+
+net.minecraft.client.gui.screens.ConnectScreen {
+}
+
+de.keksuccino.drippyloadingscreen.customization.DrippyOverlayScreen {
+}
+
+de.keksuccino.spiffyhud.customization.SpiffyOverlayScreen {
+}
+
+net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen {
+}
+
+net.minecraft.client.gui.screens.ReceivingLevelScreen {
+}
+
