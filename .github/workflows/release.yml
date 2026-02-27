@@ -30,6 +30,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate icon.ico (Windows only)
+        if: runner.os == 'Windows'
+        run: magick build/icon.png -define icon:auto-resize=256,128,64,48,32,16 build/icon.ico
+        shell: bash
+
       - name: Build & Publish
         run: npm run build && npx electron-builder ${{ matrix.args }} --publish always
         env:
