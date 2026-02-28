@@ -1210,6 +1210,50 @@ textarea.setting-input { resize: vertical; min-height: 60px; line-height: 1.5; }
 
 .settings-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
+/* Setting row toggle (flex horizontal) */
+.setting-row-toggle {
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setting-hint {
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
+  font-weight: 400;
+}
+
+/* Toggle switch */
+.toggle { position: relative; cursor: pointer; flex-shrink: 0; }
+.toggle input { display: none; }
+
+.toggle-track {
+  display: block;
+  width: 42px; height: 24px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+}
+.toggle input:checked ~ .toggle-track {
+  background: var(--green);
+  border-color: var(--green-bright);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+.toggle input:checked ~ .toggle-track .toggle-thumb {
+  transform: translateX(18px);
+  background: #fff;
+}
+
 /* ───────────────────────────────────────────────────────────────
    SHARED BUTTONS
    ─────────────────────────────────────────────────────────────── */

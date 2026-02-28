@@ -89,14 +89,14 @@ export default function ModLibrary({ onBack }) {
     setUpdatingMod(update.projectId)
     setUpdateStatus(prev => ({ ...prev, [update.projectId]: 'updating' }))
     try {
-      await window.launcher.applyModUpdate(update)
+      const result = await window.launcher.applyModUpdate(update)
       setUpdateStatus(prev => ({ ...prev, [update.projectId]: 'done' }))
       setInstalledMods(prev => prev.map(m =>
-        m.filename === update.currentFilename ? { ...m, filename: update.newFilename } : m
+        m.filename === update.currentFilename ? { ...m, filename: result?.newFilename ?? update.newFilename } : m
       ))
       setModUpdates(prev => prev.filter(u => u.projectId !== update.projectId))
-    } catch {
-      setUpdateStatus(prev => ({ ...prev, [update.projectId]: 'error' }))
+    } catch (e) {
+      setUpdateStatus(prev => ({ ...prev, [update.projectId]: { type: 'error', message: e?.message ?? 'Erreur inconnue' } }))
     }
     setUpdatingMod(null)
   }
@@ -260,12 +260,17 @@ export default function ModLibrary({ onBack }) {
                         <span style={{ color: 'var(--text-muted)', margin: '0 6px' }}>→</span>
                         <span style={{ color: 'var(--green-bright)', fontWeight: 600 }}>{u.newFilename}</span>
                       </div>
-                      {updateStatus[u.projectId] === 'done'  ? <span style={{ fontSize: 13, color: 'var(--green-bright)' }}>✓ Mis à jour</span>
-                      : updateStatus[u.projectId] === 'error' ? <span style={{ fontSize: 13, color: 'var(--red)' }}>✗ Erreur</span>
-                      : <button className="btn-primary" onClick={() => handleApplyUpdate(u)} disabled={!!updatingMod} style={{ fontSize: 12, padding: '4px 12px' }}>
+                      {updateStatus[u.projectId] === 'done' ? (
+                        <span style={{ fontSize: 13, color: 'var(--green-bright)' }}>✓ Mis à jour</span>
+                      ) : updateStatus[u.projectId]?.type === 'error' ? (
+                        <span style={{ fontSize: 12, color: 'var(--red)', maxWidth: 200, textAlign: 'right' }} title={updateStatus[u.projectId].message}>
+                          ✗ {updateStatus[u.projectId].message}
+                        </span>
+                      ) : (
+                        <button className="btn-primary" onClick={() => handleApplyUpdate(u)} disabled={!!updatingMod} style={{ fontSize: 12, padding: '4px 12px' }}>
                           {updatingMod === u.projectId ? '⏳...' : '⬆ Mettre à jour'}
                         </button>
-                      }
+                      )}
                     </div>
                   ))}
                 </div>

@@ -43,7 +43,7 @@ export default function App() {
   }
 
   if (page === 'login') return <Login onLogin={handleLogin} />
-  if (page === 'settings') return <Settings onBack={() => setPage('home')} />
+  if (page === 'settings') return <Settings onBack={() => setPage('home')} profile={profile} />
   if (page === 'modlibrary') return <ModLibrary onBack={() => setPage('home')} />
   return (
     <Home

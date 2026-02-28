@@ -1,4 +1,5 @@
 import { request as httpsRequest, get as httpsGet } from 'https'
+import { get as httpGet } from 'http'
 import Store from 'electron-store'
 
 const store = new Store()
@@ -64,13 +65,19 @@ function apiPut(path, body) {
 
 /**
  * Télécharge un fichier depuis une URL et retourne un Buffer.
- * Suit les redirections HTTP automatiquement.
+ * Suit toutes les redirections (301/302/303/307/308) et gère HTTP et HTTPS.
  */
-export function downloadBuffer(url) {
+export function downloadBuffer(url, depth = 0) {
+  if (depth > 10) return Promise.reject(new Error('Trop de redirections'))
   return new Promise((resolve, reject) => {
-    httpsGet(url, { headers: { 'User-Agent': 'minecraft-launcher' } }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        downloadBuffer(res.headers.location).then(resolve).catch(reject)
+    const getter = url.startsWith('https://') ? httpsGet : httpGet
+    getter(url, { headers: { 'User-Agent': 'minecraft-launcher' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        downloadBuffer(res.headers.location, depth + 1).then(resolve).catch(reject)
+        return
+      }
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        reject(new Error(`HTTP ${res.statusCode} pour ${url}`))
         return
       }
       const chunks = []
