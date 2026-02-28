@@ -1,6 +1,6 @@
 {
   "name": "time-of-garden",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "Launcher Time of Garden",
   "main": "out/main/index.js",
   "scripts": {
@@ -86,13 +86,13 @@
       "out/**/*"
     ],
     "releaseInfo": {
-      "releaseNotes": "Version 2.2.0 — Icônes arrondies (macOS squircle, Windows cercle). Auto-update mods contrôlé par l'admin. Correction téléchargement mods (redirections HTTP/HTTPS)."
+      "releaseNotes": "Version 2.2.2 — Icônes arrondies (macOS squircle, Windows cercle). Auto-update mods contrôlé par l'admin. Correction téléchargement mods (redirections HTTP/HTTPS)."
     },
     "publish": {
       "provider": "github",
       "owner": "Mycate39",
       "repo": "Time-of-Garden",
-      "releaseType": "release"
+      "releaseType": "draft"
     }
   }
 }

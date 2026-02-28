@@ -21,6 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Sync version from git tag
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          npm version "$VERSION" --no-git-tag-version
+        shell: bash
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -71,8 +78,11 @@ jobs:
           magick build/icon-circle.png -define icon:auto-resize=256,128,64,48,32,16 build/icon.ico
         shell: bash
 
-      - name: Build & Publish
-        run: npm run build && npx electron-builder ${{ matrix.args }} --publish always
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        run: npx electron-builder ${{ matrix.args }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -81,12 +91,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish release (remove draft)
-        run: |
-          if gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" > /dev/null 2>&1; then
-            gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"
-          else
-            echo "Aucune release trouvée pour ${{ github.ref_name }}, création manuelle..."
-            gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --title "${{ github.ref_name }}" --notes "Release ${{ github.ref_name }}"
-          fi
+        run: gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
