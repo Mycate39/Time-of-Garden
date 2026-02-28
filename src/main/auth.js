@@ -3,45 +3,78 @@ import Store from 'electron-store'
 
 const store = new Store()
 
+/* ── Helpers store ── */
+function getAccounts() { return store.get('auth.accounts', []) }
+function setAccounts(a) { store.set('auth.accounts', a) }
+function getCurrentUuid() { return store.get('auth.currentUuid', null) }
+function setCurrentUuid(uuid) { store.set('auth.currentUuid', uuid) }
+
 /**
- * Lance le flux d'authentification Microsoft dans une BrowserWindow Electron.
- * Retourne le profil Minecraft { name, uuid } et sauvegarde le refresh token.
+ * Migration transparente depuis l'ancien format single-compte.
+ */
+function migrateIfNeeded() {
+  const old = store.get('auth.refreshToken')
+  const oldProfile = store.get('auth.profile')
+  if (old && oldProfile && getAccounts().length === 0) {
+    setAccounts([{ uuid: oldProfile.uuid, name: oldProfile.name, refreshToken: old }])
+    setCurrentUuid(oldProfile.uuid)
+    store.delete('auth.refreshToken')
+    store.delete('auth.profile')
+  }
+}
+
+/**
+ * Ouvre la fenêtre de connexion Microsoft.
+ * Ajoute le compte à la liste ou met à jour s'il existe déjà.
  */
 export async function login() {
   const authManager = new Auth('select_account')
   const xboxManager = await authManager.launch('electron')
   const token = await xboxManager.getMinecraft()
 
-  const profile = {
-    name: token.profile.name,
-    uuid: token.profile.id
-  }
+  const profile = { name: token.profile.name, uuid: token.profile.id }
+  const refreshToken = xboxManager.save()
+  const account = { uuid: profile.uuid, name: profile.name, refreshToken }
 
-  // msmc v5 : Xbox.save() retourne le refresh token (string)
-  store.set('auth.refreshToken', xboxManager.save())
-  store.set('auth.profile', profile)
+  const accounts = getAccounts()
+  const idx = accounts.findIndex(a => a.uuid === profile.uuid)
+  if (idx >= 0) accounts[idx] = account
+  else accounts.push(account)
 
+  setAccounts(accounts)
+  setCurrentUuid(profile.uuid)
   return profile
 }
 
 /**
- * Retourne le profil sauvegardé et renouvelle le refresh token si nécessaire.
- * Retourne null si aucun token valide n'existe.
+ * Retourne le profil du compte actuel et renouvelle son token.
+ * Retourne null si aucun compte valide n'existe.
  */
 export async function getSavedProfile() {
-  const refreshToken = store.get('auth.refreshToken')
-  const profile = store.get('auth.profile')
+  migrateIfNeeded()
 
-  if (!refreshToken || !profile) return null
+  const uuid = getCurrentUuid()
+  const accounts = getAccounts()
+  if (!uuid || accounts.length === 0) return null
+
+  const account = accounts.find(a => a.uuid === uuid)
+  if (!account) return null
 
   try {
     const authManager = new Auth('select_account')
-    const xboxManager = await authManager.refresh(refreshToken)
-    store.set('auth.refreshToken', xboxManager.save())
-    return profile
+    const xboxManager = await authManager.refresh(account.refreshToken)
+    account.refreshToken = xboxManager.save()
+    setAccounts(accounts.map(a => a.uuid === uuid ? account : a))
+    return { name: account.name, uuid: account.uuid }
   } catch {
-    store.delete('auth.refreshToken')
-    store.delete('auth.profile')
+    // Token expiré — retirer ce compte et basculer sur le suivant
+    const updated = accounts.filter(a => a.uuid !== uuid)
+    setAccounts(updated)
+    if (updated.length > 0) {
+      setCurrentUuid(updated[0].uuid)
+      return { name: updated[0].name, uuid: updated[0].uuid }
+    }
+    setCurrentUuid(null)
     return null
   }
 }
@@ -50,21 +83,56 @@ export async function getSavedProfile() {
  * Retourne le token Minecraft au format attendu par minecraft-launcher-core.
  */
 export async function getMinecraftToken() {
-  const refreshToken = store.get('auth.refreshToken')
-  if (!refreshToken) throw new Error('Non authentifié — relance le launcher et connecte-toi.')
+  const uuid = getCurrentUuid()
+  const accounts = getAccounts()
+  const account = accounts.find(a => a.uuid === uuid)
+  if (!account) throw new Error('Non authentifié — relance le launcher et connecte-toi.')
 
   const authManager = new Auth('select_account')
-  const xboxManager = await authManager.refresh(refreshToken)
-  store.set('auth.refreshToken', xboxManager.save())
+  const xboxManager = await authManager.refresh(account.refreshToken)
+  account.refreshToken = xboxManager.save()
+  setAccounts(accounts.map(a => a.uuid === uuid ? account : a))
 
-  const token = await xboxManager.getMinecraft()
-  return token
+  return await xboxManager.getMinecraft()
 }
 
 /**
- * Déconnexion — supprime le token sauvegardé.
+ * Déconnexion complète — supprime tous les comptes.
  */
 export function logout() {
+  store.delete('auth.accounts')
+  store.delete('auth.currentUuid')
   store.delete('auth.refreshToken')
   store.delete('auth.profile')
+}
+
+/**
+ * Retourne la liste des comptes sauvegardés (sans les tokens).
+ */
+export function listAccounts() {
+  migrateIfNeeded()
+  const uuid = getCurrentUuid()
+  return getAccounts().map(({ uuid: u, name }) => ({ uuid: u, name, current: u === uuid }))
+}
+
+/**
+ * Bascule sur un compte sauvegardé par uuid.
+ * Rafraîchit son token et retourne le profil.
+ */
+export async function switchAccount(uuid) {
+  const accounts = getAccounts()
+  const account = accounts.find(a => a.uuid === uuid)
+  if (!account) throw new Error('Compte introuvable.')
+
+  try {
+    const authManager = new Auth('select_account')
+    const xboxManager = await authManager.refresh(account.refreshToken)
+    account.refreshToken = xboxManager.save()
+    setAccounts(accounts.map(a => a.uuid === uuid ? account : a))
+    setCurrentUuid(uuid)
+    return { name: account.name, uuid: account.uuid }
+  } catch {
+    setAccounts(accounts.filter(a => a.uuid !== uuid))
+    throw new Error('Session expirée pour ce compte. Reconnecte-toi.')
+  }
 }

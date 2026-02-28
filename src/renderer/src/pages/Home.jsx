@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Titlebar from '../components/Titlebar'
 import ProgressBar from '../components/ProgressBar'
 import ConsoleLog from '../components/ConsoleLog'
@@ -25,7 +25,7 @@ const SPLASH_TEXTS = [
   'Moddé à fond !',
 ]
 
-export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
+export default function Home({ profile, onSettings, onModLibrary, onLogout, onSwitchAccount }) {
   const [splashText] = useState(() => SPLASH_TEXTS[Math.floor(Math.random() * SPLASH_TEXTS.length)])
   const [status, setStatus] = useState('idle') // 'idle' | 'launching' | 'playing' | 'error'
   const [progress, setProgress] = useState(null)
@@ -47,6 +47,47 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
   // Server status
   const [serverOnline, setServerOnline] = useState(null)
   const serverPingRef = useRef(null)
+
+  // Account menu dropdown
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [savedAccounts, setSavedAccounts] = useState([])
+  const [switchingUuid, setSwitchingUuid] = useState(null)
+  const accountMenuRef = useRef(null)
+
+  const closeAccountMenu = useCallback((e) => {
+    if (accountMenuRef.current && !accountMenuRef.current.contains(e.target)) {
+      setAccountMenuOpen(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (accountMenuOpen) {
+      document.addEventListener('mousedown', closeAccountMenu)
+      window.launcher.getAccounts().then(setSavedAccounts)
+    } else {
+      document.removeEventListener('mousedown', closeAccountMenu)
+    }
+    return () => document.removeEventListener('mousedown', closeAccountMenu)
+  }, [accountMenuOpen, closeAccountMenu])
+
+  const handleSwitchAccount = async (uuid) => {
+    if (uuid === profile?.uuid) { setAccountMenuOpen(false); return }
+    setSwitchingUuid(uuid)
+    try {
+      const newProfile = await window.launcher.switchAccount(uuid)
+      onSwitchAccount(newProfile)
+    } catch {}
+    setSwitchingUuid(null)
+    setAccountMenuOpen(false)
+  }
+
+  const handleAddAccount = async () => {
+    setAccountMenuOpen(false)
+    try {
+      const newProfile = await window.launcher.login()
+      onSwitchAccount(newProfile)
+    } catch {}
+  }
 
   const checkServerStatus = async () => {
     try {
@@ -231,21 +272,63 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
             <div className="sidebar-sep" />
 
             {/* Player */}
-            <div className="player-card">
-              <div className="player-avatar">
-                {profile?.name
-                  ? <img
-                      src={`https://mc-heads.net/avatar/${profile.name}/64`}
-                      alt="skin" className="player-skin-img"
-                      onError={e => { e.currentTarget.style.display = 'none' }}
-                    />
-                  : '👤'
-                }
+            <div className="player-card-wrap" ref={accountMenuRef}>
+              <div
+                className={`player-card clickable${accountMenuOpen ? ' active' : ''}`}
+                onClick={() => setAccountMenuOpen(o => !o)}
+                title="Gérer le compte"
+              >
+                <div className="player-avatar">
+                  {profile?.name
+                    ? <img
+                        src={`https://mc-heads.net/avatar/${profile.name}/64`}
+                        alt="skin" className="player-skin-img"
+                        onError={e => { e.currentTarget.style.display = 'none' }}
+                      />
+                    : '👤'
+                  }
+                </div>
+                <div className="player-info">
+                  <div className="player-name">{profile?.name ?? '???'}</div>
+                  <div className="player-label">Compte Minecraft</div>
+                </div>
+                <span className="player-card-arrow">{accountMenuOpen ? '▲' : '▼'}</span>
               </div>
-              <div className="player-info">
-                <div className="player-name">{profile?.name ?? '???'}</div>
-                <div className="player-label">Compte Minecraft</div>
-              </div>
+
+              {accountMenuOpen && (
+                <div className="account-menu">
+                  {/* Comptes sauvegardés */}
+                  {savedAccounts.map(acc => (
+                    <button
+                      key={acc.uuid}
+                      className={`account-menu-item${acc.current ? ' current' : ''}`}
+                      onClick={() => handleSwitchAccount(acc.uuid)}
+                      disabled={switchingUuid === acc.uuid}
+                    >
+                      <img
+                        src={`https://mc-heads.net/avatar/${acc.name}/32`}
+                        alt="" className="account-menu-avatar"
+                        onError={e => { e.currentTarget.style.display = 'none' }}
+                      />
+                      <span className="account-menu-name">{acc.name}</span>
+                      {acc.current && <span className="account-menu-check">✓</span>}
+                      {switchingUuid === acc.uuid && <span className="account-menu-loading">⚙</span>}
+                    </button>
+                  ))}
+
+                  <div className="account-menu-sep" />
+
+                  {/* Ajouter un compte */}
+                  <button className="account-menu-item add" onClick={handleAddAccount}>
+                    <span>＋</span> Ajouter un compte
+                  </button>
+
+                  {/* Déconnexion complète */}
+                  <button className="account-menu-item danger" onClick={() => { setAccountMenuOpen(false); onLogout() }}>
+                    <span>✕</span> Se déconnecter
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Server status */}
@@ -366,7 +449,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout }) {
                   </button>
                 )}
                 <button className="footer-btn" onClick={onSettings}>Paramètres</button>
-                <button className="footer-btn danger" onClick={onLogout}>Déconnexion</button>
               </div>
             </div>
 

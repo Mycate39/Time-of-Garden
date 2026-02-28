@@ -3,7 +3,7 @@ import Titlebar from '../components/Titlebar'
 
 export default function Settings({ onBack }) {
   const [settings, setSettings] = useState({
-    ramMin: 2, ramMax: 4,
+    ram: 4,
     javaPath: 'java',
     githubToken: '',
     serverDescription: ''
@@ -54,24 +54,13 @@ export default function Settings({ onBack }) {
             <h3>Mémoire RAM</h3>
             <div className="setting-row">
               <label className="setting-label">
-                RAM minimum <span>{settings.ramMin} Go</span>
-              </label>
-              <input
-                className="setting-range" type="range"
-                min={1} max={8} step={1}
-                value={settings.ramMin}
-                onChange={e => handleChange('ramMin', Number(e.target.value))}
-              />
-            </div>
-            <div className="setting-row">
-              <label className="setting-label">
-                RAM maximum <span>{settings.ramMax} Go</span>
+                RAM allouée <span>{settings.ram} Go</span>
               </label>
               <input
                 className="setting-range" type="range"
                 min={2} max={16} step={1}
-                value={settings.ramMax}
-                onChange={e => handleChange('ramMax', Number(e.target.value))}
+                value={settings.ram}
+                onChange={e => handleChange('ram', Number(e.target.value))}
               />
             </div>
           </div>
