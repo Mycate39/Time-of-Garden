@@ -30,9 +30,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate icon.ico (Windows only)
+      - name: Generate macOS icon (coins arrondis Apple, ~22%)
+        if: runner.os == 'macOS'
+        run: |
+          SIZE=$(magick identify -format "%w" build/icon.png)
+          RADIUS=$((SIZE * 22 / 100))
+          magick -size ${SIZE}x${SIZE} xc:none -fill white \
+            -draw "roundrectangle 0,0 $((SIZE-1)),$((SIZE-1)) ${RADIUS},${RADIUS}" \
+            PNG32:build/icon-mask.png
+          magick build/icon.png build/icon-mask.png -compose DstIn -composite build/icon-rounded.png
+          mkdir -p build/icon.iconset
+          for size in 16 32 128 256 512; do
+            sips -z $size $size build/icon-rounded.png --out build/icon.iconset/icon_${size}x${size}.png
+            sips -z $((size*2)) $((size*2)) build/icon-rounded.png --out build/icon.iconset/icon_${size}x${size}@2x.png
+          done
+          iconutil -c icns build/icon.iconset -o build/icon.icns
+        shell: bash
+
+      - name: Generate icon.ico Windows (cercle complet)
         if: runner.os == 'Windows'
-        run: magick build/icon.png -define icon:auto-resize=256,128,64,48,32,16 build/icon.ico
+        run: |
+          SIZE=$(magick identify -format "%w" build/icon.png)
+          CENTER=$(( SIZE / 2 - 1 ))
+          magick -size ${SIZE}x${SIZE} xc:none -fill white \
+            -draw "circle ${CENTER},${CENTER} ${CENTER},0" \
+            PNG32:build/icon-circle-mask.png
+          magick build/icon.png build/icon-circle-mask.png -compose DstIn -composite build/icon-circle.png
+          magick build/icon-circle.png -define icon:auto-resize=256,128,64,48,32,16 build/icon.ico
         shell: bash
 
       - name: Build & Publish
