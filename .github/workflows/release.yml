@@ -32,6 +32,7 @@ jobs:
 
       - name: Install ImageMagick (macOS)
         if: runner.os == 'macOS'
+        continue-on-error: true
         run: brew install imagemagick
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
@@ -39,6 +40,7 @@ jobs:
 
       - name: Generate macOS icon (coins arrondis Apple, ~22%)
         if: runner.os == 'macOS'
+        continue-on-error: true
         run: |
           SIZE=$(magick identify -format "%w" build/icon.png)
           RADIUS=$((SIZE * 22 / 100))
@@ -57,6 +59,7 @@ jobs:
 
       - name: Generate icon.ico Windows (cercle complet)
         if: runner.os == 'Windows'
+        continue-on-error: true
         run: |
           SIZE=$(magick identify -format "%w" build/icon.png)
           CENTER=$(( SIZE / 2 - 1 ))
