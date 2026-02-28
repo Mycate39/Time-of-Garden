@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises'
 import { basename } from 'path'
 import { connect as netConnect } from 'net'
 import Store from 'electron-store'
-import { login, getSavedProfile, logout } from './auth'
+import { login, getSavedProfile, logout, listAccounts, switchAccount } from './auth'
 import { launchGame } from './launcher'
 import { checkForUpdates, downloadMods, saveLocalManifest } from './modUpdater'
 import { searchMods, getModDownload, getSuggestedMods, getVersionByHash, getModInfo } from './modrinth'
@@ -19,8 +19,7 @@ const SERVER_HOST = 'timeofgarden818.mcsh.io'
 const SERVER_PORT = 25565
 
 const DEFAULT_SETTINGS = {
-  ramMin: 2,
-  ramMax: 4,
+  ram: 4,
   javaPath: 'java',
   githubToken: '',
   serverDescription: ''
@@ -66,6 +65,8 @@ export function registerIpcHandlers(win) {
   ipcMain.handle('auth:login', async () => login())
   ipcMain.handle('auth:profile', async () => getSavedProfile())
   ipcMain.handle('auth:logout', () => logout())
+  ipcMain.handle('auth:get-accounts', () => listAccounts())
+  ipcMain.handle('auth:switch-account', (_, uuid) => switchAccount(uuid))
 
   // --- Paramètres ---
   // Merge avec DEFAULT_SETTINGS pour garantir que tous les champs existent

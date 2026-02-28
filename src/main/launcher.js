@@ -234,8 +234,7 @@ export async function launchGame({ onProgress, onLog, onClose }) {
   const forgeInstallerPath = join(gameDir, `forge-${MC_VERSION}-${FORGE_VERSION}-installer.jar`)
   const settings = store.get('settings', {})
 
-  const ramMin = settings.ramMin || 2
-  const ramMax = settings.ramMax || 4
+  const ram = settings.ram || 4
   const serverIp = settings.serverIp || ''
   const javaPath = resolveJavaPath(settings.javaPath || 'java')
 
@@ -288,8 +287,8 @@ export async function launchGame({ onProgress, onLog, onClose }) {
     },
     forge: forgeInstallerPath,
     memory: {
-      max: `${ramMax}G`,
-      min: `${ramMin}G`
+      max: `${ram}G`,
+      min: `${ram}G`
     },
     javaPath
   }

@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('launcher', {
   login: () => ipcRenderer.invoke('auth:login'),
   getProfile: () => ipcRenderer.invoke('auth:profile'),
   logout: () => ipcRenderer.invoke('auth:logout'),
+  getAccounts: () => ipcRenderer.invoke('auth:get-accounts'),
+  switchAccount: (uuid) => ipcRenderer.invoke('auth:switch-account', uuid),
 
   // Jeu
   launch: () => ipcRenderer.invoke('game:launch'),

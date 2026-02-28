@@ -30,6 +30,10 @@ export default function App() {
     setPage('login')
   }
 
+  const handleSwitchAccount = (newProfile) => {
+    setProfile(newProfile)
+  }
+
   if (page === 'loading') {
     return (
       <div className="loading-screen">
@@ -47,6 +51,7 @@ export default function App() {
       onSettings={() => setPage('settings')}
       onModLibrary={() => setPage('modlibrary')}
       onLogout={handleLogout}
+      onSwitchAccount={handleSwitchAccount}
     />
   )
 }

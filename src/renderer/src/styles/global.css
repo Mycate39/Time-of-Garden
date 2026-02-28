@@ -570,6 +570,10 @@ html, body, #root {
 }
 
 /* Player card */
+.player-card-wrap {
+  animation: slide-right 0.4s 0.08s ease both;
+}
+
 .player-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -577,7 +581,7 @@ html, body, #root {
   padding: 9px 11px;
   display: flex; align-items: center; gap: 9px;
   position: relative; overflow: hidden;
-  animation: slide-right 0.4s 0.08s ease both;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .player-card::before {
@@ -585,6 +589,61 @@ html, body, #root {
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--brass), transparent);
   opacity: 0.32;
+}
+
+.player-card.clickable { cursor: pointer; }
+.player-card.clickable:hover { border-color: var(--brass); background: var(--bg-hover); }
+.player-card.clickable.active { border-color: var(--brass); border-radius: var(--radius) var(--radius) 0 0; }
+
+.player-card-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.player-card.clickable:hover .player-card-arrow { color: var(--brass); }
+
+/* Menu inline — pas absolu pour éviter le chevauchement avec le statut serveur */
+.account-menu {
+  background: var(--bg-card);
+  border: 1px solid var(--brass);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+  animation: pop-in 0.15s ease;
+}
+
+.account-menu-item {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text); font-family: var(--font-ui); font-size: 13px; font-weight: 500;
+  cursor: pointer; text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.account-menu-item:last-child { border-bottom: none; }
+.account-menu-item:hover { background: var(--bg-hover); color: var(--brass); }
+.account-menu-item.current { color: var(--brass); background: var(--brass-muted); }
+.account-menu-item.current:hover { background: var(--brass-muted); }
+.account-menu-item.add:hover { background: var(--bg-hover); color: var(--green-bright); }
+.account-menu-item.danger:hover { background: var(--red-dim); color: #e05050; }
+.account-menu-item:disabled { opacity: 0.6; cursor: wait; }
+
+.account-menu-avatar {
+  width: 22px; height: 22px;
+  border-radius: 3px; flex-shrink: 0;
+  image-rendering: pixelated;
+}
+.account-menu-name { flex: 1; }
+.account-menu-check { color: var(--green-bright); font-size: 11px; margin-left: auto; }
+.account-menu-loading { font-size: 12px; animation: gear-cw 1s linear infinite; margin-left: auto; }
+
+.account-menu-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 2px 0;
 }
 
 .player-avatar {
@@ -1069,7 +1128,8 @@ html, body, #root {
 .settings-group {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg); overflow: hidden;
+  border-radius: var(--radius-lg);
+  /* PAS de overflow:hidden — ça rogne le slider thumb */
   animation: slide-up 0.3s ease both;
 }
 .settings-group:nth-child(2) { animation-delay: 0.05s; }
@@ -1080,6 +1140,7 @@ html, body, #root {
   padding: 10px 14px;
   background: rgba(0,0,0,0.22);
   border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* coins hauts arrondis */
   font-family: var(--font-ui);
   font-size: 14px; font-weight: 700;
   color: var(--brass); letter-spacing: 1px; text-transform: uppercase;
@@ -1120,17 +1181,32 @@ html, body, #root {
 textarea.setting-input { resize: vertical; min-height: 60px; line-height: 1.5; }
 
 .setting-range {
-  width: 100%; appearance: none;
-  height: 4px;
-  background: linear-gradient(90deg, var(--brass) 0%, var(--brass-dim) 100%);
-  border-radius: 2px; outline: none; cursor: pointer;
+  width: 100%;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+  outline: none; cursor: pointer; padding: 0;
+}
+.setting-range::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(90deg, var(--brass-dim), rgba(200,160,32,0.15));
+  border-radius: 3px;
+  border: 1px solid rgba(200,160,32,0.2);
 }
 .setting-range::-webkit-slider-thumb {
-  appearance: none; width: 16px; height: 16px; border-radius: 50%;
-  background: var(--brass); border: 2px solid var(--bg-panel);
-  box-shadow: 0 0 8px rgba(200,160,32,0.5); cursor: pointer; transition: all 0.15s;
+  appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  margin-top: -8px;
+  background: radial-gradient(circle, var(--brass-bright) 30%, var(--brass) 100%);
+  border: 2px solid var(--bg-deep);
+  box-shadow: 0 0 10px rgba(200,160,32,0.6);
+  cursor: pointer; transition: all 0.15s;
 }
-.setting-range::-webkit-slider-thumb:hover { background: var(--brass-bright); transform: scale(1.2); }
+.setting-range::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 16px rgba(200,160,32,0.9);
+  transform: scale(1.15);
+}
 
 .settings-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
