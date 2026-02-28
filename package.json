@@ -1,6 +1,6 @@
 {
   "name": "time-of-garden",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Launcher Time of Garden",
   "main": "out/main/index.js",
   "scripts": {
@@ -86,7 +86,7 @@
       "out/**/*"
     ],
     "releaseInfo": {
-      "releaseNotes": "Version 2.1.0 — Multi-comptes : sauvegarde et switch entre comptes Minecraft sans reconnexion. Slider RAM, corrections d'affichage."
+      "releaseNotes": "Version 2.2.0 — Icônes arrondies (macOS squircle, Windows cercle). Auto-update mods contrôlé par l'admin. Correction téléchargement mods (redirections HTTP/HTTPS)."
     },
     "publish": {
       "provider": "github",

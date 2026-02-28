@@ -27,6 +27,9 @@ contextBridge.exposeInMainWorld('launcher', {
   applyMods: (manifest) => ipcRenderer.invoke('mods:apply', manifest),
   onModsProgress: (cb) => ipcRenderer.on('mods:progress', cb),
 
+  // Admin — contrôle auto-update mods
+  setAutoUpdate: (val) => ipcRenderer.invoke('admin:set-auto-update', val),
+
   // Admin — bibliothèque de mods
   searchMods: (query) => ipcRenderer.invoke('admin:search-mods', { query }),
   addMod: (projectId, source, meta) => ipcRenderer.invoke('admin:add-mod', { projectId, source, meta }),

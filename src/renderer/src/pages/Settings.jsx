@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import Titlebar from '../components/Titlebar'
 
-export default function Settings({ onBack }) {
+const ADMIN_USERNAME = 'Mycate39'
+
+export default function Settings({ onBack, profile }) {
   const [settings, setSettings] = useState({
     ram: 4,
+    autoUpdateMods: false,
     javaPath: 'java',
     githubToken: '',
     serverDescription: ''
@@ -19,6 +22,9 @@ export default function Settings({ onBack }) {
 
   const handleSave = async () => {
     await window.launcher.setSettings(settings)
+    if (profile?.name === ADMIN_USERNAME) {
+      await window.launcher.setAutoUpdate(settings.autoUpdateMods)
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -48,6 +54,27 @@ export default function Settings({ onBack }) {
               />
             </div>
           </div>
+
+          {/* Mods — admin uniquement */}
+          {profile?.name === ADMIN_USERNAME && (
+            <div className="settings-group">
+              <h3>Mods</h3>
+              <div className="setting-row setting-row-toggle">
+                <div>
+                  <div className="setting-label">Mise à jour automatique des mods</div>
+                  <div className="setting-hint">Installe les mises à jour de mods au démarrage sans confirmation</div>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={!!settings.autoUpdateMods}
+                    onChange={e => handleChange('autoUpdateMods', e.target.checked)}
+                  />
+                  <span className="toggle-track"><span className="toggle-thumb" /></span>
+                </label>
+              </div>
+            </div>
+          )}
 
           {/* Mémoire */}
           <div className="settings-group">

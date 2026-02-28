@@ -20,6 +20,7 @@ const SERVER_PORT = 25565
 
 const DEFAULT_SETTINGS = {
   ram: 4,
+  autoUpdateMods: false,
   javaPath: 'java',
   githubToken: '',
   serverDescription: ''
@@ -40,7 +41,7 @@ function buildReverseMap() {
 }
 
 
-// Regénère et pousse le mods.json après un changement
+// Regénère et pousse le mods.json après un changement (bumpe la version)
 async function refreshManifest() {
   const allMods = await listModsOnGitHub()
   const mods = allMods.map(f => ({
@@ -52,8 +53,20 @@ async function refreshManifest() {
   parts[2] = (parts[2] ?? 0) + 1
   const newVersion = parts.join('.')
   store.set('mods.publishedVersion', newVersion)
-  await pushModsManifest({ version: newVersion, mods })
+  const settings = store.get('settings', DEFAULT_SETTINGS)
+  await pushModsManifest({ version: newVersion, mods, autoUpdate: settings.autoUpdateMods ?? false })
   return { version: newVersion, mods }
+}
+
+// Met à jour uniquement le champ autoUpdate dans mods.json sans changer la version
+async function pushAutoUpdateOnly(autoUpdate) {
+  const allMods = await listModsOnGitHub()
+  const mods = allMods.map(f => ({
+    filename: f.filename,
+    url: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/mods/${encodeURIComponent(f.filename)}`
+  }))
+  const currentVersion = store.get('mods.publishedVersion', '1.0.0')
+  await pushModsManifest({ version: currentVersion, mods, autoUpdate })
 }
 
 export function registerIpcHandlers(win) {
@@ -80,6 +93,7 @@ export function registerIpcHandlers(win) {
       hasUpdate: result.hasUpdate,
       version: result.remoteManifest?.version ?? null,
       count: result.remoteManifest?.mods?.length ?? 0,
+      autoUpdate: result.remoteManifest?.autoUpdate ?? false,
       error: result.error,
       remoteManifest: result.remoteManifest
     }
@@ -333,6 +347,11 @@ export function registerIpcHandlers(win) {
       results.push(filename)
     }
     return results
+  })
+
+  // --- Contrôle admin de l'auto-update mods ---
+  ipcMain.handle('admin:set-auto-update', async (_, autoUpdate) => {
+    await pushAutoUpdateOnly(autoUpdate)
   })
 
   // --- Lancement du jeu ---

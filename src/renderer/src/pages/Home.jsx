@@ -133,27 +133,34 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     return () => { if (serverPingRef.current) clearInterval(serverPingRef.current) }
   }, [])
 
-  const checkModsUpdate = async () => {
-    setModsStatus('checking')
-    try {
-      const result = await window.launcher.checkMods()
-      if (result.hasUpdate && !result.error) {
-        setModsUpdate({ version: result.version, count: result.count, remoteManifest: result.remoteManifest })
-      }
-    } catch {}
-    setModsStatus('idle')
-  }
-
-  const handleInstallMods = async () => {
+  const handleInstallMods = async (update) => {
+    const target = update ?? modsUpdate
+    if (!target) return
     setModsStatus('downloading')
     setModsProgress(null)
     try {
-      await window.launcher.applyMods(modsUpdate.remoteManifest)
+      await window.launcher.applyMods(target.remoteManifest)
       setModsStatus('done')
       setModsUpdate(null)
     } catch {
       setModsStatus('idle')
     }
+  }
+
+  const checkModsUpdate = async () => {
+    setModsStatus('checking')
+    try {
+      const result = await window.launcher.checkMods()
+      if (result.hasUpdate && !result.error) {
+        const update = { version: result.version, count: result.count, remoteManifest: result.remoteManifest }
+        if (result.autoUpdate) {
+          await handleInstallMods(update)
+          return
+        }
+        setModsUpdate(update)
+      }
+    } catch {}
+    setModsStatus('idle')
   }
 
   const handleCopyLogs = () => {
