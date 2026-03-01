@@ -44,9 +44,6 @@ contextBridge.exposeInMainWorld('launcher', {
   applyModUpdate: (data) => ipcRenderer.invoke('admin:apply-mod-update', data),
   onModUpdateProgress: (cb) => ipcRenderer.on('admin:mod-update-progress', cb),
 
-  // Statut serveur Minecraft
-  serverStatus: () => ipcRenderer.invoke('server:status'),
-
   // Mises à jour launcher
   onUpdateAvailable: (cb) => ipcRenderer.on('updater:available', cb),
   onUpdateProgress: (cb) => ipcRenderer.on('updater:progress', cb),

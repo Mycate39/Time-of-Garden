@@ -8,8 +8,7 @@ export default function Settings({ onBack, profile }) {
     ram: 4,
     autoUpdateMods: false,
     javaPath: 'java',
-    githubToken: '',
-    serverDescription: ''
+    githubToken: ''
   })
   const [saved, setSaved] = useState(false)
 
@@ -39,21 +38,6 @@ export default function Settings({ onBack, profile }) {
         </div>
 
         <div className="settings-body">
-
-          {/* Serveur */}
-          <div className="settings-group">
-            <h3>Serveur</h3>
-            <div className="setting-row">
-              <label className="setting-label">Description du serveur (affiché sur l'accueil)</label>
-              <textarea
-                className="setting-input"
-                rows={3}
-                placeholder="Une courte description de votre serveur..."
-                value={settings.serverDescription}
-                onChange={e => handleChange('serverDescription', e.target.value)}
-              />
-            </div>
-          </div>
 
           {/* Mods — admin uniquement */}
           {profile?.name === ADMIN_USERNAME && (
