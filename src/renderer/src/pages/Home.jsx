@@ -32,8 +32,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
   const [logs, setLogs] = useState([])
   const [showLogs, setShowLogs] = useState(false)
   const [logsCopied, setLogsCopied] = useState(false)
-  const [settings, setSettings] = useState(null)
-
   // Mods update
   const [modsUpdate, setModsUpdate] = useState(null)
   const [modsStatus, setModsStatus] = useState('idle')
@@ -43,10 +41,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
   const [updateModal, setUpdateModal] = useState(null)   // null | { version }
   const [updateDlPct, setUpdateDlPct] = useState(null)  // null | 0-100
   const [updateReady, setUpdateReady] = useState(false)
-
-  // Server status
-  const [serverOnline, setServerOnline] = useState(null)
-  const serverPingRef = useRef(null)
 
   // Account menu dropdown
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
@@ -89,18 +83,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     } catch {}
   }
 
-  const checkServerStatus = async () => {
-    try {
-      const result = await window.launcher.serverStatus()
-      setServerOnline(result.online)
-    } catch {
-      setServerOnline(false)
-    }
-  }
-
   useEffect(() => {
-    window.launcher.getSettings().then(setSettings)
-
     window.launcher.onProgress((_, e) => setProgress(e))
 
     window.launcher.onLog((_, msg) => {
@@ -127,10 +110,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     })
 
     checkModsUpdate()
-    checkServerStatus()
-    serverPingRef.current = setInterval(checkServerStatus, 30000)
-
-    return () => { if (serverPingRef.current) clearInterval(serverPingRef.current) }
   }, [])
 
   const handleInstallMods = async (update) => {
@@ -198,7 +177,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     setUpdateReady(false)
   }
 
-  const serverDescription = settings?.serverDescription || ''
   const isDownloading = updateDlPct !== null && !updateReady
 
   return (
@@ -338,18 +316,6 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
               )}
             </div>
 
-            {/* Server status */}
-            <div className="server-status-bar">
-              <div className="server-status-row">
-                <span className={`server-dot ${serverOnline === true ? 'online' : serverOnline === false ? 'offline' : 'unknown'}`} />
-                <span className="server-status-label">
-                  {serverOnline === true ? 'Serveur en ligne' : serverOnline === false ? 'Hors ligne' : 'Vérification...'}
-                </span>
-              </div>
-              {serverDescription ? (
-                <div className="server-description">{serverDescription}</div>
-              ) : null}
-            </div>
           </aside>
 
           {/* ── Main panel ── */}

@@ -1,7 +1,6 @@
 import { ipcMain, app, dialog } from 'electron'
 import { readFile } from 'fs/promises'
 import { basename } from 'path'
-import { connect as netConnect } from 'net'
 import Store from 'electron-store'
 import { login, getSavedProfile, logout, listAccounts, switchAccount } from './auth'
 import { launchGame } from './launcher'
@@ -15,15 +14,12 @@ const store = new Store()
 
 const MODS_MANIFEST_URL = 'https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods.json'
 const GITHUB_REPO = 'Mycate39/Time-of-Garden'
-const SERVER_HOST = 'timeofgarden818.mcsh.io'
-const SERVER_PORT = 25565
 
 const DEFAULT_SETTINGS = {
   ram: 4,
   autoUpdateMods: false,
   javaPath: 'java',
-  githubToken: '',
-  serverDescription: ''
+  githubToken: ''
 }
 
 function getInstalledMap() { return store.get('installedMods', {}) }
@@ -104,63 +100,6 @@ export function registerIpcHandlers(win) {
       win.webContents.send('mods:progress', progress)
     })
     saveLocalManifest(remoteManifest)
-  })
-
-  // --- Statut du serveur Minecraft (protocole SLP 1.7+) ---
-  ipcMain.handle('server:status', async () => {
-    return new Promise((resolve) => {
-      const socket = netConnect({ host: SERVER_HOST, port: SERVER_PORT }, () => {
-        function varInt(v) {
-          const bytes = []
-          v = v >>> 0  // unsigned 32-bit
-          do {
-            let b = v & 0x7F
-            v >>>= 7
-            if (v !== 0) b |= 0x80
-            bytes.push(b)
-          } while (v !== 0)
-          return Buffer.from(bytes)
-        }
-        function mcString(str) {
-          const buf = Buffer.from(str, 'utf8')
-          return Buffer.concat([varInt(buf.length), buf])
-        }
-
-        const portBuf = Buffer.alloc(2)
-        portBuf.writeUInt16BE(SERVER_PORT)
-        // Handshake : ID=0x00, protocol version=765 (1.20.1), adresse, port, nextState=1
-        const handshakeData = Buffer.concat([
-          varInt(0x00), varInt(765), mcString(SERVER_HOST), portBuf, varInt(1)
-        ])
-        const handshake = Buffer.concat([varInt(handshakeData.length), handshakeData])
-        // Status Request : longueur=1, ID=0x00
-        const statusReq = Buffer.from([0x01, 0x00])
-        socket.write(Buffer.concat([handshake, statusReq]))
-      })
-
-      let resolved = false
-      const done = (online) => {
-        if (!resolved) { resolved = true; socket.destroy(); resolve({ online }) }
-      }
-
-      socket.setTimeout(5000)
-      socket.on('data', (chunk) => {
-        // Valide que la réponse contient du JSON Minecraft (pas juste n'importe quelle donnée réseau)
-        try {
-          const str = chunk.toString('utf8')
-          const start = str.indexOf('{"')
-          const end = str.lastIndexOf('}')
-          if (start !== -1 && end > start) {
-            const json = JSON.parse(str.slice(start, end + 1))
-            if (json.version || json.players || json.description) { done(true); return }
-          }
-        } catch {}
-        done(false)
-      })
-      socket.on('timeout', () => done(false))
-      socket.on('error', () => done(false))
-      socket.on('close', () => done(false))
-    })
   })
 
   // --- Vérification des nouvelles versions de mods ---
@@ -283,6 +222,7 @@ export function registerIpcHandlers(win) {
       setInstalledMeta(newMeta)
     }
 
+    await refreshManifest()
   })
 
   ipcMain.handle('admin:add-mod', async (_, { projectId, source, meta }) => {
@@ -324,6 +264,7 @@ export function registerIpcHandlers(win) {
         ? 'Aucune version compatible ou mod bloqué (distribution interdite)'
         : 'Aucune version compatible Forge 1.20.1 trouvée'
     )
+    await refreshManifest()
     return { filename, deps: depsInstalled }
   })
 
@@ -346,6 +287,7 @@ export function registerIpcHandlers(win) {
 
       results.push(filename)
     }
+    await refreshManifest()
     return results
   })
 
