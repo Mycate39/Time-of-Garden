@@ -1,5 +1,5 @@
 {
-  "version": "1.0.8",
+  "version": "1.0.9",
   "mods": [
     {
       "filename": "AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
@@ -304,10 +304,6 @@
     {
       "filename": "do_a_barrel_roll-forge-3.5.6+1.20.1.jar",
       "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/do_a_barrel_roll-forge-3.5.6%2B1.20.1.jar"
-    },
-    {
-      "filename": "drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
-      "url": "https://raw.githubusercontent.com/Mycate39/Time-of-Garden/main/mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar"
     },
     {
       "filename": "easydisenchanting-forge-1.0.1-1.20.1.jar",
