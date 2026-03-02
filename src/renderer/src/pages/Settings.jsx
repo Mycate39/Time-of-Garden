@@ -7,9 +7,12 @@ export default function Settings({ onBack, profile }) {
   const [settings, setSettings] = useState({
     ram: 4,
     autoUpdateMods: false,
+    minimizeOnLaunch: true,
     javaPath: 'java',
-    githubToken: ''
+    githubToken: '',
+    news: ''
   })
+  const [detectingJava, setDetectingJava] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => { window.launcher.getSettings().then(setSettings) }, [])
@@ -19,10 +22,17 @@ export default function Settings({ onBack, profile }) {
     setSaved(false)
   }
 
+  const handleDetectJava = async () => {
+    setDetectingJava(true)
+    const found = await window.launcher.detectJava()
+    if (found) handleChange('javaPath', found)
+    setDetectingJava(false)
+  }
+
   const handleSave = async () => {
     await window.launcher.setSettings(settings)
     if (profile?.name === ADMIN_USERNAME) {
-      await window.launcher.setAutoUpdate(settings.autoUpdateMods)
+      await window.launcher.setAutoUpdate()
     }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -59,6 +69,25 @@ export default function Settings({ onBack, profile }) {
               </div>
             </div>
           )}
+
+          {/* Lancement */}
+          <div className="settings-group">
+            <h3>Lancement</h3>
+            <div className="setting-row setting-row-toggle">
+              <div>
+                <div className="setting-label">Minimiser au lancement du jeu</div>
+                <div className="setting-hint">Le launcher se minimise automatiquement quand Minecraft démarre</div>
+              </div>
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={!!settings.minimizeOnLaunch}
+                  onChange={e => handleChange('minimizeOnLaunch', e.target.checked)}
+                />
+                <span className="toggle-track"><span className="toggle-thumb" /></span>
+              </label>
+            </div>
+          </div>
 
           {/* Mémoire */}
           <div className="settings-group">
@@ -102,12 +131,23 @@ export default function Settings({ onBack, profile }) {
               <label className="setting-label">
                 Chemin vers Java 17 (laisse "java" pour le Java système)
               </label>
-              <input
-                className="setting-input" type="text"
-                placeholder='ex: /usr/local/opt/openjdk@17/bin/java'
-                value={settings.javaPath}
-                onChange={e => handleChange('javaPath', e.target.value)}
-              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="setting-input" type="text"
+                  style={{ flex: 1 }}
+                  placeholder='ex: /usr/local/opt/openjdk@17/bin/java'
+                  value={settings.javaPath}
+                  onChange={e => handleChange('javaPath', e.target.value)}
+                />
+                <button
+                  className="btn-ghost"
+                  onClick={handleDetectJava}
+                  disabled={detectingJava}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {detectingJava ? '⚙ Détection...' : '⊕ Détecter'}
+                </button>
+              </div>
             </div>
             <div className="setting-row">
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
@@ -115,6 +155,23 @@ export default function Settings({ onBack, profile }) {
               </span>
             </div>
           </div>
+
+          {/* Nouveautés — admin uniquement */}
+          {profile?.name === ADMIN_USERNAME && (
+            <div className="settings-group">
+              <h3>Nouveautés</h3>
+              <div className="setting-row">
+                <label className="setting-label">Message affiché aux joueurs au démarrage (laisser vide pour désactiver)</label>
+                <textarea
+                  className="setting-input"
+                  rows={3}
+                  placeholder="Ex : Nouvelle map disponible ! Connectez-vous pour la découvrir."
+                  value={settings.news ?? ''}
+                  onChange={e => handleChange('news', e.target.value)}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="settings-actions">
             {saved && (

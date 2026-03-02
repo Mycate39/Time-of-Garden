@@ -1,10 +1,11 @@
-import { ipcMain, app, dialog } from 'electron'
-import { readFile } from 'fs/promises'
-import { basename } from 'path'
+import { ipcMain, app, dialog, shell } from 'electron'
+import { readFile, writeFile } from 'fs/promises'
+import { existsSync, mkdirSync } from 'fs'
+import { basename, join } from 'path'
 import Store from 'electron-store'
 import { login, getSavedProfile, logout, listAccounts, switchAccount } from './auth'
-import { launchGame } from './launcher'
-import { checkForUpdates, downloadMods, saveLocalManifest } from './modUpdater'
+import { launchGame, detectJavaPath } from './launcher'
+import { checkForUpdates, downloadMods, saveLocalManifest, getLocalManifest, getModsUserDir, checkFreeSpace } from './modUpdater'
 import { searchMods, getModDownload, getSuggestedMods, getVersionByHash, getModInfo } from './modrinth'
 import { searchCurseForgeMods, getCurseForgeDownload, getSuggestedCurseForgeMods } from './curseforge'
 import { createHash } from 'crypto'
@@ -18,8 +19,10 @@ const GITHUB_REPO = 'Mycate39/Time-of-Garden'
 const DEFAULT_SETTINGS = {
   ram: 4,
   autoUpdateMods: false,
+  minimizeOnLaunch: true,
   javaPath: 'java',
-  githubToken: ''
+  githubToken: '',
+  news: ''
 }
 
 function getInstalledMap() { return store.get('installedMods', {}) }
@@ -38,37 +41,46 @@ function buildReverseMap() {
 
 
 // Regénère et pousse le mods.json après un changement (bumpe la version)
+function buildModsEntries(allMods) {
+  const hashes = store.get('modsHashes', {})
+  return allMods.map(f => {
+    const entry = {
+      filename: f.filename,
+      url: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/mods/${encodeURIComponent(f.filename)}`
+    }
+    if (hashes[f.filename]) entry.sha1 = hashes[f.filename]
+    return entry
+  })
+}
+
 async function refreshManifest() {
   const allMods = await listModsOnGitHub()
-  const mods = allMods.map(f => ({
-    filename: f.filename,
-    url: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/mods/${encodeURIComponent(f.filename)}`
-  }))
+  const mods = buildModsEntries(allMods)
   const current = store.get('mods.publishedVersion', '1.0.0')
   const parts = current.split('.').map(Number)
   parts[2] = (parts[2] ?? 0) + 1
   const newVersion = parts.join('.')
   store.set('mods.publishedVersion', newVersion)
   const settings = store.get('settings', DEFAULT_SETTINGS)
-  await pushModsManifest({ version: newVersion, mods, autoUpdate: settings.autoUpdateMods ?? false })
+  await pushModsManifest({ version: newVersion, mods, autoUpdate: settings.autoUpdateMods ?? false, news: settings.news ?? '' })
   return { version: newVersion, mods }
 }
 
-// Met à jour uniquement le champ autoUpdate dans mods.json sans changer la version
-async function pushAutoUpdateOnly(autoUpdate) {
+// Met à jour autoUpdate + news dans mods.json sans changer la version
+async function pushRemoteConfig() {
   const allMods = await listModsOnGitHub()
-  const mods = allMods.map(f => ({
-    filename: f.filename,
-    url: `https://raw.githubusercontent.com/${GITHUB_REPO}/main/mods/${encodeURIComponent(f.filename)}`
-  }))
+  const mods = buildModsEntries(allMods)
   const currentVersion = store.get('mods.publishedVersion', '1.0.0')
-  await pushModsManifest({ version: currentVersion, mods, autoUpdate })
+  const settings = store.get('settings', DEFAULT_SETTINGS)
+  await pushModsManifest({ version: currentVersion, mods, autoUpdate: settings.autoUpdateMods ?? false, news: settings.news ?? '' })
 }
 
 export function registerIpcHandlers(win) {
   // --- Fenêtre ---
   ipcMain.on('window:minimize', () => win.minimize())
   ipcMain.on('window:close', () => app.quit())
+  ipcMain.handle('game:open-dir', () => shell.openPath(join(app.getPath('appData'), '.custom-launcher')))
+  ipcMain.handle('app:version', () => app.getVersion())
 
   // --- Authentification ---
   ipcMain.handle('auth:login', async () => login())
@@ -85,21 +97,42 @@ export function registerIpcHandlers(win) {
   // --- Mods (joueurs) ---
   ipcMain.handle('mods:check', async () => {
     const result = await checkForUpdates(MODS_MANIFEST_URL)
+    const offline = !!result.error
+    const local = getLocalManifest()
+    const localFilenames = new Set((local?.mods || []).map(m => m.filename))
+    const remoteFilenames = new Set((result.remoteManifest?.mods || []).map(m => m.filename))
+    const changelog = result.remoteManifest ? {
+      added: [...remoteFilenames].filter(f => !localFilenames.has(f)),
+      removed: [...localFilenames].filter(f => !remoteFilenames.has(f))
+    } : null
     return {
       hasUpdate: result.hasUpdate,
       version: result.remoteManifest?.version ?? null,
+      localVersion: local?.version ?? null,
       count: result.remoteManifest?.mods?.length ?? 0,
       autoUpdate: result.remoteManifest?.autoUpdate ?? false,
+      news: result.remoteManifest?.news ?? null,
+      offline,
       error: result.error,
-      remoteManifest: result.remoteManifest
+      remoteManifest: result.remoteManifest,
+      changelog
     }
   })
 
   ipcMain.handle('mods:apply', async (_, remoteManifest) => {
+    const { ok, freeMB } = checkFreeSpace(getModsUserDir())
+    if (!ok) throw new Error(`Espace disque insuffisant : ${freeMB} Mo disponible, 500 Mo requis minimum`)
     await downloadMods(remoteManifest, (progress) => {
       win.webContents.send('mods:progress', progress)
     })
     saveLocalManifest(remoteManifest)
+  })
+
+  ipcMain.handle('logs:save', async (_, content) => {
+    const logsDir = join(app.getPath('appData'), '.custom-launcher', 'launcher-logs')
+    if (!existsSync(logsDir)) mkdirSync(logsDir, { recursive: true })
+    const date = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')
+    await writeFile(join(logsDir, `session-${date}.txt`), content, 'utf8')
   })
 
   // --- Vérification des nouvelles versions de mods ---
@@ -249,6 +282,8 @@ export function registerIpcHandlers(win) {
       win.webContents.send('admin:add-progress', { step: 'upload', filename: download.filename })
       await uploadModToGitHub(download.filename, buffer)
       setInstalledMap({ ...getInstalledMap(), [id]: download.filename })
+      const sha1 = createHash('sha1').update(buffer).digest('hex')
+      store.set('modsHashes', { ...store.get('modsHashes', {}), [download.filename]: sha1 })
 
       // Stocke les métadonnées du mod principal
       if (modMeta) {
@@ -284,6 +319,8 @@ export function registerIpcHandlers(win) {
       const buffer = await readFile(filePath)
       await uploadModToGitHub(filename, buffer)
       setInstalledMap({ ...getInstalledMap(), [`local:${filename}`]: filename })
+      const sha1 = createHash('sha1').update(buffer).digest('hex')
+      store.set('modsHashes', { ...store.get('modsHashes', {}), [filename]: sha1 })
 
       results.push(filename)
     }
@@ -291,17 +328,21 @@ export function registerIpcHandlers(win) {
     return results
   })
 
-  // --- Contrôle admin de l'auto-update mods ---
-  ipcMain.handle('admin:set-auto-update', async (_, autoUpdate) => {
-    await pushAutoUpdateOnly(autoUpdate)
+  // --- Contrôle admin de l'auto-update mods + news ---
+  ipcMain.handle('admin:set-auto-update', async () => {
+    await pushRemoteConfig()
   })
+
+  // --- Détection automatique de Java ---
+  ipcMain.handle('java:detect', () => detectJavaPath())
 
   // --- Lancement du jeu ---
   ipcMain.handle('game:launch', async () => {
     await launchGame({
       onProgress: (e) => win.webContents.send('game:progress', e),
       onLog: (msg) => win.webContents.send('game:log', String(msg)),
-      onClose: (code) => win.webContents.send('game:close', code)
+      onClose: (code) => win.webContents.send('game:close', code),
+      onCrash: (report) => win.webContents.send('game:crash', report)
     })
   })
 }

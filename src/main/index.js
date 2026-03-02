@@ -1,19 +1,24 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { autoUpdater } from 'electron-updater'
+import Store from 'electron-store'
 import { registerIpcHandlers } from './ipc'
 
+const store = new Store()
 let mainWindow
 
 autoUpdater.autoDownload = false        // L'utilisateur décide de télécharger
 autoUpdater.autoInstallOnAppQuit = true
 
 function createWindow() {
+  const savedPos = store.get('win.position')
+
   mainWindow = new BrowserWindow({
     width: 960,
     height: 700,
     minWidth: 960,
     minHeight: 700,
+    ...(savedPos ? { x: savedPos.x, y: savedPos.y } : {}),
     resizable: false,
     frame: false,
     backgroundColor: '#0d0d1a',
@@ -22,6 +27,11 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false
     }
+  })
+
+  mainWindow.on('moved', () => {
+    const [x, y] = mainWindow.getPosition()
+    store.set('win.position', { x, y })
   })
 
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {

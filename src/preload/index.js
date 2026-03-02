@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld('launcher', {
   // Fenêtre
   minimize: () => ipcRenderer.send('window:minimize'),
   close: () => ipcRenderer.send('window:close'),
+  openGameDir: () => ipcRenderer.invoke('game:open-dir'),
+  getVersion: () => ipcRenderer.invoke('app:version'),
+  saveLogs: (content) => ipcRenderer.invoke('logs:save', content),
 
   // Auth
   login: () => ipcRenderer.invoke('auth:login'),
@@ -17,6 +20,7 @@ contextBridge.exposeInMainWorld('launcher', {
   onProgress: (cb) => ipcRenderer.on('game:progress', cb),
   onLog: (cb) => ipcRenderer.on('game:log', cb),
   onGameClose: (cb) => ipcRenderer.on('game:close', cb),
+  onGameCrash: (cb) => ipcRenderer.on('game:crash', cb),
 
   // Paramètres
   getSettings: () => ipcRenderer.invoke('settings:get'),
@@ -27,8 +31,11 @@ contextBridge.exposeInMainWorld('launcher', {
   applyMods: (manifest) => ipcRenderer.invoke('mods:apply', manifest),
   onModsProgress: (cb) => ipcRenderer.on('mods:progress', cb),
 
-  // Admin — contrôle auto-update mods
-  setAutoUpdate: (val) => ipcRenderer.invoke('admin:set-auto-update', val),
+  // Admin — contrôle auto-update mods + news
+  setAutoUpdate: () => ipcRenderer.invoke('admin:set-auto-update'),
+
+  // Java
+  detectJava: () => ipcRenderer.invoke('java:detect'),
 
   // Admin — bibliothèque de mods
   searchMods: (query) => ipcRenderer.invoke('admin:search-mods', { query }),

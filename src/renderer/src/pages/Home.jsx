@@ -6,6 +6,28 @@ import logo from '../assets/logo.png'
 
 const ADMIN_USERNAME = 'Mycate39'
 
+const LOADING_TIPS = [
+  '💡 Appuie sur M pour ouvrir la carte du monde (Xaero)',
+  '💡 Cherche des recettes avec Ctrl+F dans JEI',
+  '💡 Survole une machine Create et appuie sur W pour voir son tutoriel',
+  '💡 Appuie sur B pour ouvrir ton sac à dos',
+  '💡 U ouvre les waypoints, J crée un nouveau waypoint',
+  '💡 C pour zoomer (OkZoomer)',
+  '💡 K active ou désactive les shaders',
+  '💡 F4 passe en mode caméra libre (Freecam)',
+  '💡 V active le chat vocal (Simple Voice Chat)',
+  '💡 Alt+clic gauche pour remplir un Copycat avec un bloc',
+  '💡 X interagit avec ton inventaire depuis le sac à dos',
+  '💡 Ctrl+Z / Ctrl+Y pour annuler/refaire avec Effortless Building',
+]
+
+function parseModName(filename) {
+  let name = filename.replace(/\.jar$/, '')
+  name = name.replace(/-(?:forge|neoforge|fabric|mc|MC)-?\d.*$/i, '')
+  name = name.replace(/-\d[\d.]+.*$/, '')
+  return name.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
 const SPLASH_TEXTS = [
   'Creeper, aw man!',
   'Also try Terraria!',
@@ -36,6 +58,41 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
   const [modsUpdate, setModsUpdate] = useState(null)
   const [modsStatus, setModsStatus] = useState('idle')
   const [modsProgress, setModsProgress] = useState(null)
+  const [offline, setOffline] = useState(false)
+  const [changelog, setChangelog] = useState(null)
+  const [installedVersion, setInstalledVersion] = useState(null)
+
+  // News
+  const [news, setNews] = useState(null)
+  const [newsDismissed, setNewsDismissed] = useState(false)
+
+  // Session timer
+  const sessionStartRef = useRef(null)
+  const [sessionDuration, setSessionDuration] = useState(null)
+
+  // Logs ref (pour accès dans les callbacks sans closure stale)
+  const logsRef = useRef([])
+  useEffect(() => { logsRef.current = logs }, [logs])
+
+  // Paramètre minimiser au lancement
+  const minimizeOnLaunchRef = useRef(true)
+
+  // Welcome modal (premier lancement)
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('tog:welcomeSeen'))
+
+  // Loading tips
+  const [currentTip, setCurrentTip] = useState(0)
+
+  // Mod list modal
+  const [showModList, setShowModList] = useState(false)
+  const [modsList, setModsList] = useState([])
+
+  // RAM faible
+  const [lowRam, setLowRam] = useState(false)
+  const [ramValue, setRamValue] = useState(null)
+
+  // Version du launcher
+  const [appVersion, setAppVersion] = useState(null)
 
   // Launcher auto-update — modal flow
   const [updateModal, setUpdateModal] = useState(null)   // null | { version }
@@ -91,10 +148,26 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     })
 
     window.launcher.onGameClose((_, code) => {
+      if (sessionStartRef.current) {
+        const ms = Date.now() - sessionStartRef.current
+        const m = Math.floor(ms / 60000)
+        const h = Math.floor(m / 60)
+        setSessionDuration(h > 0 ? `${h}h ${m % 60}m` : `${m}m`)
+        sessionStartRef.current = null
+      }
+      const closeMsg = `[Launcher] Jeu fermé (code ${code})`
+      // Sauvegarde des logs dans un fichier
+      const allLogs = [...logsRef.current, closeMsg].join('\n')
+      window.launcher.saveLogs(allLogs).catch(() => {})
       setStatus('idle')
       setProgress(null)
-      setLogs(prev => [...prev, `[Launcher] Jeu fermé (code ${code})`])
+      setLogs(prev => [...prev, closeMsg])
       checkModsUpdate()
+    })
+
+    window.launcher.onGameCrash((_, report) => {
+      setShowLogs(true)
+      setLogs(prev => [...prev, '\n── CRASH REPORT ──', ...report.split('\n').slice(0, 40)])
     })
 
     window.launcher.onModsProgress((_, p) => setModsProgress(p))
@@ -110,7 +183,21 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     })
 
     checkModsUpdate()
+    window.launcher.getSettings().then(s => {
+      if (s.ram < 4) { setLowRam(true); setRamValue(s.ram) }
+      minimizeOnLaunchRef.current = s.minimizeOnLaunch ?? true
+    })
+    window.launcher.getVersion().then(setAppVersion)
   }, [])
+
+  // Rotation des tips pendant le chargement
+  useEffect(() => {
+    if (status !== 'launching') return
+    const interval = setInterval(() => {
+      setCurrentTip(t => (t + 1) % LOADING_TIPS.length)
+    }, 3500)
+    return () => clearInterval(interval)
+  }, [status])
 
   const handleInstallMods = async (update) => {
     const target = update ?? modsUpdate
@@ -130,8 +217,16 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     setModsStatus('checking')
     try {
       const result = await window.launcher.checkMods()
+      setOffline(!!result.offline)
+      if (result.localVersion) setInstalledVersion(result.localVersion)
+      if (result.remoteManifest?.mods) setModsList(result.remoteManifest.mods)
+      if (result.news) {
+        setNews(result.news)
+        setNewsDismissed(false)
+      }
       if (result.hasUpdate && !result.error) {
         const update = { version: result.version, count: result.count, remoteManifest: result.remoteManifest }
+        if (result.changelog) setChangelog(result.changelog)
         if (result.autoUpdate) {
           await handleInstallMods(update)
           return
@@ -140,6 +235,22 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
       }
     } catch {}
     setModsStatus('idle')
+  }
+
+  const handleRepairMods = async () => {
+    setModsStatus('downloading')
+    setModsProgress(null)
+    try {
+      const result = await window.launcher.checkMods()
+      if (result.remoteManifest) {
+        await window.launcher.applyMods(result.remoteManifest)
+        setModsStatus('done')
+      } else {
+        setModsStatus('idle')
+      }
+    } catch {
+      setModsStatus('idle')
+    }
   }
 
   const handleCopyLogs = () => {
@@ -155,6 +266,11 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     try {
       await window.launcher.launch()
       setStatus('playing')
+      sessionStartRef.current = Date.now()
+      // Notification système
+      try { new Notification('Time of Garden', { body: '✓ Minecraft est prêt à jouer !' }) } catch {}
+      // Minimiser le launcher
+      if (minimizeOnLaunchRef.current) window.launcher.minimize()
     } catch (e) {
       setStatus('error')
       setLogs(prev => [...prev, `[Erreur] ${e.message}`])
@@ -182,6 +298,77 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
   return (
     <>
       <Titlebar />
+
+      {/* ── Modal Bienvenue (premier lancement) ── */}
+      {showWelcome && (
+        <div className="modal-overlay">
+          <div className="modal-box welcome-modal">
+            <div className="modal-title">Bienvenue sur Time of Garden ! 🌿</div>
+            <div className="modal-desc" style={{ color: 'var(--text-muted)', marginBottom: 4 }}>
+              Forge 1.20.1 — Modpack industriel &amp; aventure
+            </div>
+
+            <div className="welcome-section">
+              <div className="welcome-section-title">Rejoindre le monde</div>
+              <div className="welcome-section-body">
+                Ouvre Minecraft → Multijoueur → <strong>Connexion directe</strong><br />
+                ou attends l'invitation LAN de l'hôte en jeu.
+              </div>
+            </div>
+
+            <div className="welcome-section">
+              <div className="welcome-section-title">Touches essentielles</div>
+              <div className="welcome-keybinds">
+                <div className="wb-row"><kbd>M</kbd><span>Carte du monde (Xaero)</span></div>
+                <div className="wb-row"><kbd>Ctrl+F</kbd><span>Rechercher dans JEI</span></div>
+                <div className="wb-row"><kbd>W</kbd><span>Tutoriel machine Create (Ponder)</span></div>
+                <div className="wb-row"><kbd>B</kbd><span>Ouvrir le sac à dos</span></div>
+                <div className="wb-row"><kbd>U</kbd><span>Waypoints Xaero</span></div>
+                <div className="wb-row"><kbd>C</kbd><span>Zoom (OkZoomer)</span></div>
+                <div className="wb-row"><kbd>K</kbd><span>Activer/désactiver les shaders</span></div>
+                <div className="wb-row"><kbd>V</kbd><span>Chat vocal</span></div>
+              </div>
+            </div>
+
+            <div className="welcome-section">
+              <div className="welcome-section-title">Mods principaux</div>
+              <div className="welcome-section-body" style={{ color: 'var(--text-muted)' }}>
+                Create · JEI · Xaero's Maps · Sophisticated Backpacks · Effortless Building · SecurityCraft · Iris Shaders · Simple Voice Chat
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: 16 }}>
+              <button className="btn-ghost" onClick={() => setShowWelcome(false)}>Afficher à nouveau</button>
+              <button className="btn-primary" onClick={() => {
+                localStorage.setItem('tog:welcomeSeen', '1')
+                setShowWelcome(false)
+              }}>C'est parti !</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal liste des mods ── */}
+      {showModList && (
+        <div className="modal-overlay" onClick={() => setShowModList(false)}>
+          <div className="modal-box modlist-modal" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div className="modal-title">Mods installés ({modsList.length})</div>
+              <button className="btn-ghost" style={{ padding: '4px 10px' }} onClick={() => setShowModList(false)}>✕</button>
+            </div>
+            <div className="modlist-grid">
+              {modsList.map(m => (
+                <div key={m.filename} className="modlist-item" title={m.filename}>
+                  {parseModName(m.filename)}
+                </div>
+              ))}
+              {modsList.length === 0 && (
+                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Aucun mod chargé.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Launcher update modal ── */}
       {updateModal && (
@@ -251,6 +438,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
               </div>
               <div className="server-name">Time of{'\n'}Garden</div>
               <div className="server-version">Forge 1.20.1</div>
+              {appVersion && <div className="launcher-version">v{appVersion}</div>}
               <div className="splash-text">{splashText}</div>
             </div>
 
@@ -322,6 +510,32 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
           <div className="home-main">
             <div className="main-bg-gear">⚙</div>
 
+            {/* Alerte RAM faible */}
+            {lowRam && status === 'idle' && (
+              <div className="mods-banner" style={{ background: 'rgba(200,80,0,0.12)', borderColor: 'var(--copper)' }}>
+                <span style={{ color: 'var(--copper)' }}>⚠ RAM allouée : {ramValue} Go — recommandé : 4 Go minimum</span>
+                <button className="btn-ghost" onClick={onSettings} style={{ whiteSpace: 'nowrap' }}>Paramètres</button>
+              </div>
+            )}
+
+            {/* Offline indicator */}
+            {offline && (
+              <div className="mods-banner" style={{ background: 'rgba(180,100,0,0.15)', borderColor: 'var(--copper)' }}>
+                <span style={{ color: 'var(--copper)' }}>⚠ Mode hors-ligne — vérification des mods impossible</span>
+              </div>
+            )}
+
+            {/* News banner */}
+            {news && !newsDismissed && (
+              <div className="mods-banner update" style={{ background: 'rgba(72,152,200,0.12)', borderColor: 'var(--blueprint)' }}>
+                <div className="mods-banner-info">
+                  <strong style={{ color: 'var(--blueprint)' }}>📢 Nouveautés</strong>
+                  <span style={{ whiteSpace: 'pre-line' }}>{news}</span>
+                </div>
+                <button className="btn-ghost" onClick={() => setNewsDismissed(true)}>OK</button>
+              </div>
+            )}
+
             {/* Mods update banners */}
             {modsStatus === 'checking' && (
               <div className="mods-banner">
@@ -334,6 +548,13 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
                 <div className="mods-banner-info">
                   <strong>Mise à jour des mods disponible</strong>
                   <span>Version {modsUpdate.version} — {modsUpdate.count} mod(s)</span>
+                  {changelog && (changelog.added.length > 0 || changelog.removed.length > 0) && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {changelog.added.length > 0 && `+${changelog.added.length} ajouté(s)`}
+                      {changelog.added.length > 0 && changelog.removed.length > 0 && ' · '}
+                      {changelog.removed.length > 0 && `-${changelog.removed.length} retiré(s)`}
+                    </span>
+                  )}
                 </div>
                 <div className="mods-banner-actions">
                   <button className="btn-primary" onClick={handleInstallMods}>Installer</button>
@@ -379,6 +600,11 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
                   <button className="play-btn" onClick={handlePlay}>
                     ▶ Jouer
                   </button>
+                  {status === 'idle' && sessionDuration && (
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                      Dernière session : {sessionDuration}
+                    </span>
+                  )}
                   {status === 'error' && (
                     <span style={{ color: 'var(--red)', fontSize: 14 }}>
                       Une erreur est survenue. Consulte les logs.
@@ -395,6 +621,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
                   </div>
                   <ProgressBar progress={progress} />
                   <div className="launching-text">Préparation de Minecraft en cours</div>
+                  <div className="launching-tip">{LOADING_TIPS[currentTip]}</div>
                 </>
               )}
 
@@ -416,9 +643,23 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
                 )}
               </div>
               <div className="footer-right">
+                {status === 'idle' && modsStatus === 'idle' && (
+                  <button className="footer-btn" onClick={handleRepairMods} title="Re-télécharger tous les mods">
+                    ↻ Réparer
+                  </button>
+                )}
+                <button className="footer-btn" onClick={() => window.launcher.openGameDir()} title="Ouvrir le dossier de jeu">
+                  ⊞ Dossier
+                </button>
+                <button className="footer-btn" onClick={() => setShowModList(true)} title="Liste des mods installés">
+                  ☰ Mods
+                </button>
+                <button className="footer-btn" onClick={() => setShowWelcome(true)} title="Guide de démarrage">
+                  ? Guide
+                </button>
                 {profile?.name === ADMIN_USERNAME && (
                   <button className="footer-btn" onClick={onModLibrary} title="Bibliothèque de mods (admin)">
-                    ⚙ Mods
+                    ⚙ Admin
                   </button>
                 )}
                 <button className="footer-btn" onClick={onSettings}>Paramètres</button>

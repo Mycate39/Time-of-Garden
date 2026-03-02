@@ -1,10 +1,42 @@
 import { app } from 'electron'
-import { existsSync, mkdirSync, readdirSync, rmSync, createWriteStream } from 'fs'
+import { existsSync, mkdirSync, readdirSync, rmSync, createWriteStream, readFileSync } from 'fs'
 import { join } from 'path'
 import { get } from 'https'
+import { createHash } from 'crypto'
+import { execSync } from 'child_process'
+import { platform } from 'os'
 import Store from 'electron-store'
 
 const store = new Store()
+
+/**
+ * Retourne l'espace disque libre en octets au chemin donné, ou null si indisponible.
+ */
+function getFreeBytes(dir) {
+  try {
+    if (platform() === 'win32') {
+      const drive = dir.slice(0, 2)
+      const out = execSync(`wmic logicaldisk where "DeviceID='${drive}'" get FreeSpace`, { encoding: 'utf8', timeout: 3000 })
+      const m = out.match(/(\d+)/)
+      return m ? parseInt(m[1]) : null
+    } else {
+      const out = execSync(`df -k "${dir}"`, { encoding: 'utf8', timeout: 3000 })
+      const parts = out.trim().split('\n').pop().trim().split(/\s+/)
+      const kb = parseInt(parts[3])
+      return isNaN(kb) ? null : kb * 1024
+    }
+  } catch { return null }
+}
+
+/**
+ * Vérifie qu'il y a assez d'espace disque libre (500 Mo par défaut).
+ * Retourne { ok, freeMB }. Si la vérification échoue, ok = true (on ne bloque pas).
+ */
+export function checkFreeSpace(dir, requiredBytes = 500 * 1024 * 1024) {
+  const free = getFreeBytes(dir)
+  if (free === null) return { ok: true }
+  return { ok: free >= requiredBytes, freeMB: Math.round(free / (1024 * 1024)) }
+}
 
 /**
  * Répertoire où sont stockés les mods téléchargés (userData, persiste entre les mises à jour du launcher).
@@ -66,8 +98,10 @@ export function hasUpdate(remote, local) {
   if (!local) return true
   if (remote.version !== local.version) return true
   const modsDir = getModsUserDir()
-  const downloaded = readdirSync(modsDir).filter((f) => f.endsWith('.jar'))
-  return downloaded.length === 0
+  for (const mod of (remote.mods || [])) {
+    if (!existsSync(join(modsDir, mod.filename))) return true
+  }
+  return false
 }
 
 /**
@@ -109,7 +143,15 @@ export async function downloadMods(manifest, onProgress) {
   for (let i = 0; i < mods.length; i++) {
     const mod = mods[i]
     onProgress({ current: i + 1, total: mods.length, filename: mod.filename })
-    await downloadFile(mod.url, join(modsDir, mod.filename))
+    const dest = join(modsDir, mod.filename)
+    await downloadFile(mod.url, dest)
+    if (mod.sha1) {
+      const actual = createHash('sha1').update(readFileSync(dest)).digest('hex')
+      if (actual !== mod.sha1) {
+        rmSync(dest, { force: true })
+        throw new Error(`Intégrité échouée : ${mod.filename}`)
+      }
+    }
   }
 }
 

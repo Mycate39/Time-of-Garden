@@ -179,8 +179,35 @@ function getResourcePacksSourceDir() {
 }
 
 /**
+ * Chemin vers le template options.txt embarqué dans le launcher.
+ */
+function getOptionsTemplatePath() {
+  if (app.isPackaged) {
+    return join(process.resourcesPath, 'options.txt')
+  }
+  return join(__dirname, '../../resources/options.txt')
+}
+
+/**
+ * Copie le template options.txt uniquement si le joueur n'en a pas encore.
+ * Cela initialise les paramètres par défaut (résolution, touches, etc.) au premier lancement.
+ */
+function syncOptions(gameDir, onLog) {
+  const optionsPath = join(gameDir, 'options.txt')
+  if (existsSync(optionsPath)) return
+
+  const templatePath = getOptionsTemplatePath()
+  if (!existsSync(templatePath)) {
+    onLog('[Launcher] Pas de template options.txt.')
+    return
+  }
+  copyFileSync(templatePath, optionsPath)
+  onLog('[Launcher] options.txt initialisé (premier lancement).')
+}
+
+/**
  * Synchronise les resource packs vers le dossier resourcepacks du jeu,
- * puis active ceux trouvés dans options.txt.
+ * puis active ceux trouvés dans options.txt en préservant les entrées existantes.
  */
 function syncResourcePacks(gameDir, onLog) {
   const sourceDir = getResourcePacksSourceDir()
@@ -203,22 +230,32 @@ function syncResourcePacks(gameDir, onLog) {
     onLog(`[Launcher] Resource pack installé : ${pack}`)
   }
 
-  // Activer les resource packs dans options.txt
+  // Activer les resource packs dans options.txt en préservant les entrées non-file
   const optionsPath = join(gameDir, 'options.txt')
   let lines = []
   if (existsSync(optionsPath)) {
     lines = readFileSync(optionsPath, 'utf8').split('\n')
   }
 
-  // Construire la valeur resourcePacks avec tous les packs
-  const packEntries = packs.map(p => `file\\/${p}`)
-  const resourcePacksValue = `resourcePacks:["vanilla","${packEntries.join('","')}"]`
-
+  const fileEntries = packs.map(p => `file\\/${p}`)
   const idx = lines.findIndex(l => l.startsWith('resourcePacks:'))
+
   if (idx >= 0) {
-    lines[idx] = resourcePacksValue
+    const match = lines[idx].match(/^resourcePacks:\[(.*)\]$/)
+    if (match) {
+      try {
+        const existing = JSON.parse(`[${match[1]}]`)
+        const nonFileEntries = existing.filter(e => !e.startsWith('file\\/'))
+        const allEntries = [...nonFileEntries, ...fileEntries]
+        lines[idx] = `resourcePacks:[${allEntries.map(e => `"${e}"`).join(',')}]`
+      } catch {
+        lines[idx] = `resourcePacks:["vanilla",${fileEntries.map(e => `"${e}"`).join(',')}]`
+      }
+    } else {
+      lines[idx] = `resourcePacks:["vanilla",${fileEntries.map(e => `"${e}"`).join(',')}]`
+    }
   } else {
-    lines.push(resourcePacksValue)
+    lines.push(`resourcePacks:["vanilla",${fileEntries.map(e => `"${e}"`).join(',')}]`)
   }
 
   writeFileSync(optionsPath, lines.join('\n'), 'utf8')
@@ -226,10 +263,58 @@ function syncResourcePacks(gameDir, onLog) {
 }
 
 /**
+ * Détecte automatiquement le chemin vers Java 17 sur la machine.
+ * Retourne le chemin trouvé, ou null si non trouvé.
+ */
+export function detectJavaPath() {
+  if (platform() === 'darwin') {
+    try {
+      const javaHome = execSync('/usr/libexec/java_home -v 17', { encoding: 'utf8' }).trim()
+      if (javaHome) return `${javaHome}/bin/java`
+    } catch {}
+    const candidates = [
+      '/opt/homebrew/opt/openjdk@17/bin/java',
+      '/usr/local/opt/openjdk@17/bin/java',
+      '/opt/homebrew/opt/openjdk/bin/java',
+      '/usr/local/opt/openjdk/bin/java',
+    ]
+    for (const c of candidates) {
+      if (existsSync(c)) return c
+    }
+  }
+  if (platform() === 'win32') {
+    const candidates = [
+      'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.0+0-hotspot\\bin\\java.exe',
+      'C:\\Program Files\\Microsoft\\jdk-17.0.0.0-hotspot\\bin\\java.exe',
+      'C:\\Program Files\\Java\\jdk-17\\bin\\java.exe',
+      'C:\\Program Files\\Java\\jdk-17.0\\bin\\java.exe',
+    ]
+    for (const c of candidates) {
+      if (existsSync(c)) return c
+    }
+  }
+  return null
+}
+
+/**
+ * Retourne le contenu du dernier crash report Minecraft, ou null s'il n'y en a pas.
+ */
+function getLatestCrashReport(gameDir) {
+  const crashDir = join(gameDir, 'crash-reports')
+  if (!existsSync(crashDir)) return null
+  const files = readdirSync(crashDir)
+    .filter(f => f.endsWith('.txt'))
+    .map(f => ({ name: f, mtime: statSync(join(crashDir, f)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime)
+  if (!files.length) return null
+  return readFileSync(join(crashDir, files[0].name), 'utf8')
+}
+
+/**
  * Lance Minecraft avec Forge.
  * Émet les événements de progression et de logs via les callbacks.
  */
-export async function launchGame({ onProgress, onLog, onClose }) {
+export async function launchGame({ onProgress, onLog, onClose, onCrash }) {
   const gameDir = getGameDir()
   const forgeInstallerPath = join(gameDir, `forge-${MC_VERSION}-${FORGE_VERSION}-installer.jar`)
   const settings = store.get('settings', {})
@@ -257,6 +342,9 @@ export async function launchGame({ onProgress, onLog, onClose }) {
   onLog('[Launcher] Synchronisation FancyMenu...')
   syncFancyMenu(gameDir, onLog)
 
+  // Initialisation options.txt (premier lancement uniquement)
+  syncOptions(gameDir, onLog)
+
   // Synchronisation Resource Packs
   onLog('[Launcher] Synchronisation resource packs...')
   syncResourcePacks(gameDir, onLog)
@@ -274,7 +362,13 @@ export async function launchGame({ onProgress, onLog, onClose }) {
 
   launcher.on('progress', onProgress)
   launcher.on('data', onLog)
-  launcher.on('close', onClose)
+  launcher.on('close', (code) => {
+    if (code !== 0 && onCrash) {
+      const crash = getLatestCrashReport(gameDir)
+      if (crash) onCrash(crash)
+    }
+    onClose(code)
+  })
   launcher.on('package-extract', (e) => onLog(`[Forge] Extraction : ${e.type}`))
   launcher.on('debug', (msg) => onLog(`[Debug] ${msg}`))
 
