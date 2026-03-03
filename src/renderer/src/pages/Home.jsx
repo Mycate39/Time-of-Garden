@@ -98,6 +98,7 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
   const [updateModal, setUpdateModal] = useState(null)   // null | { version }
   const [updateDlPct, setUpdateDlPct] = useState(null)  // null | 0-100
   const [updateReady, setUpdateReady] = useState(false)
+  const [updateError, setUpdateError] = useState(null)  // null | string
 
   // Account menu dropdown
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
@@ -175,11 +176,16 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     // Launcher update events
     window.launcher.onUpdateAvailable((_, info) => {
       setUpdateModal({ version: info.version })
+      setUpdateError(null)
     })
     window.launcher.onUpdateProgress((_, pct) => setUpdateDlPct(pct))
     window.launcher.onUpdateReady(() => {
       setUpdateDlPct(100)
       setUpdateReady(true)
+    })
+    window.launcher.onUpdateError((_, msg) => {
+      setUpdateDlPct(null)
+      setUpdateError(msg)
     })
 
     checkModsUpdate()
@@ -291,9 +297,10 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
     setUpdateModal(null)
     setUpdateDlPct(null)
     setUpdateReady(false)
+    setUpdateError(null)
   }
 
-  const isDownloading = updateDlPct !== null && !updateReady
+  const isDownloading = updateDlPct !== null && !updateReady && !updateError
 
   return (
     <>
@@ -405,6 +412,23 @@ export default function Home({ profile, onSettings, onModLibrary, onLogout, onSw
                   <div className="modal-progress-fill" style={{ width: `${Math.max(updateDlPct ?? 0, 3)}%` }} />
                 </div>
               </div>
+            )}
+
+            {updateError && (
+              <>
+                <div className="modal-desc" style={{ color: 'var(--copper)' }}>
+                  ⚠ Le téléchargement automatique n'est pas disponible sur ce système.<br />
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    Télécharge la nouvelle version manuellement depuis GitHub.
+                  </span>
+                </div>
+                <div className="modal-actions">
+                  <button className="btn-ghost" onClick={handleDismissUpdate}>Fermer</button>
+                  <button className="btn-primary" onClick={() => window.launcher.openReleasesPage()}>
+                    Ouvrir la page de release
+                  </button>
+                </div>
+              </>
             )}
 
             {updateReady && (

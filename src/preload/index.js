@@ -55,6 +55,8 @@ contextBridge.exposeInMainWorld('launcher', {
   onUpdateAvailable: (cb) => ipcRenderer.on('updater:available', cb),
   onUpdateProgress: (cb) => ipcRenderer.on('updater:progress', cb),
   onUpdateReady: (cb) => ipcRenderer.on('updater:ready', cb),
+  onUpdateError: (cb) => ipcRenderer.on('updater:error', cb),
   downloadUpdate: () => ipcRenderer.send('updater:download'),
-  installUpdate: () => ipcRenderer.send('updater:install')
+  installUpdate: () => ipcRenderer.send('updater:install'),
+  openReleasesPage: () => ipcRenderer.send('updater:open-releases')
 })

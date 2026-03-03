@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import { autoUpdater } from 'electron-updater'
 import Store from 'electron-store'
@@ -63,8 +63,8 @@ app.whenReady().then(() => {
       win.webContents.send('updater:ready')
     })
 
-    autoUpdater.on('error', () => {
-      // Erreur silencieuse — pas critique
+    autoUpdater.on('error', (err) => {
+      win.webContents.send('updater:error', err?.message ?? 'Erreur inconnue')
     })
 
     // Déclenché par le renderer quand l'utilisateur clique "Télécharger"
@@ -74,6 +74,10 @@ app.whenReady().then(() => {
 
     ipcMain.on('updater:install', () => {
       autoUpdater.quitAndInstall()
+    })
+
+    ipcMain.on('updater:open-releases', () => {
+      shell.openExternal('https://github.com/Mycate39/Time-of-Garden/releases/latest')
     })
   }
 
